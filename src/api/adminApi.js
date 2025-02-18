@@ -17,12 +17,26 @@ export const getAdminDetails = async () => {
   });
 }
 
-export const getUsers = async () => {
+export const updateAdmin = async (data) => {
   const token = localStorage.getItem("token");
-  return axios.get(`${API_BASE_URL}/admin/users`, {
+  return axios.post(`${API_BASE_URL}/admin/update`,data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export const getUsers = async (data) => {
+  const token = localStorage.getItem("token");
+  return axios.post(`${API_BASE_URL}/admin/users`,data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+export const getUserDetails = async (id) => {
+  const token = localStorage.getItem("token");
+  return axios.get(`${API_BASE_URL}/admin/users/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
 
 export const updateUser = async (id, data) => {
   const token = localStorage.getItem("token");
@@ -33,7 +47,7 @@ export const updateUser = async (id, data) => {
 
 export const exportUsersData = async (filter) => {
   const token = localStorage.getItem("token");
-  return axios.post(`${API_BASE_URL}/admin/export-users`, filter, {
+  return axios.post(`${API_BASE_URL}/admin/export/users`, filter, {
     responseType: "blob",
     headers: { Authorization: `Bearer ${token}` },
   });

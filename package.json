@@ -14,14 +14,6 @@
     "themesberg"
   ],
   "license": "MIT",
-  "homepage": "https://demo.themesberg.com/volt-react-dashboard",
-  "bugs": {
-    "url": "https://github.com/themesberg/volt-react-dashboard/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/themesberg/volt-react-dashboard"
-  },
   "version": "1.0.1",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -38,25 +30,33 @@
     "bootstrap": "5.0.0-beta1",
     "chartist": "^0.11.4",
     "chartist-plugin-tooltips-updated": "^0.1.4",
+    "country-state-city": "^3.2.1",
+    "date-fns": "^2.29.3",
+    "firebase": "^11.2.0",
     "moment-timezone": "^0.5.31",
     "react": "^18.3.1",
+    "react-alert": "^7.0.3",
+    "react-alert-template-basic": "^1.0.2",
     "react-chartist": "^0.14.4",
     "react-copy-to-clipboard": "^5.0.3",
     "react-datetime": "^3.0.4",
     "react-dom": "^18.3.1",
+    "react-feather": "^2.0.10",
     "react-github-btn": "^1.2.0",
     "react-live": "^2.2.3",
     "react-redux": "^9.2.0",
     "react-router-dom": "^5.2.0",
     "react-router-hash-link": "^2.3.1",
     "react-scripts": "3.4.3",
+    "react-select": "^5.10.0",
     "react-transition-group": "^4.4.1",
     "sass": "^1.50.0",
-    "simplebar-react": "^2.3.0"
+    "simplebar-react": "^2.3.0",
+    "socket.io-client": "^4.8.1"
   },
   "scripts": {
-    "start": "NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
     "build-local": "PUBLIC_URL=./ react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -77,5 +77,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0"
   }
 }

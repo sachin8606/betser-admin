@@ -7,7 +7,7 @@ import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Card, Form, Button, InputGroup } from '@themesberg/react-bootstrap';
 
 
-export const GeneralInfoForm = () => {
+export const GeneralInfoForm = ({user}) => {
   const [birthday, setBirthday] = useState("");
 
   return (
@@ -19,17 +19,17 @@ export const GeneralInfoForm = () => {
             <Col md={6} className="mb-3">
               <Form.Group id="firstName">
                 <Form.Label>First Name</Form.Label>
-                <Form.Control required type="text" placeholder="Enter your first name" />
+                <Form.Control required type="text" placeholder="Enter your first name" value={user.firstName} />
               </Form.Group>
             </Col>
             <Col md={6} className="mb-3">
               <Form.Group id="lastName">
                 <Form.Label>Last Name</Form.Label>
-                <Form.Control required type="text" placeholder="Also your last name" />
+                <Form.Control required type="text" placeholder="Also your last name" value={user.lastName}/>
               </Form.Group>
             </Col>
           </Row>
-          <Row className="align-items-center">
+          {/* <Row className="align-items-center">
             <Col md={6} className="mb-3">
               <Form.Group id="birthday">
                 <Form.Label>Birthday</Form.Label>
@@ -60,42 +60,40 @@ export const GeneralInfoForm = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-          </Row>
+          </Row> */}
           <Row>
             <Col md={6} className="mb-3">
               <Form.Group id="emal">
                 <Form.Label>Email</Form.Label>
-                <Form.Control required type="email" placeholder="name@company.com" />
+                <Form.Control required type="email" placeholder="name@company.com" value={user.email}/>
               </Form.Group>
             </Col>
             <Col md={6} className="mb-3">
               <Form.Group id="phone">
                 <Form.Label>Phone</Form.Label>
-                <Form.Control required type="number" placeholder="+12-345 678 910" />
+                <Form.Control required type="text"  value={"+"+user.countryCode+ " "+user.phone}/>
               </Form.Group>
             </Col>
           </Row>
-
-          <h5 className="my-4">Address</h5>
-          <Row>
+          {/* <Row>
             <Col sm={9} className="mb-3">
               <Form.Group id="address">
                 <Form.Label>Address</Form.Label>
-                <Form.Control required type="text" placeholder="Enter your home address" />
+                <Form.Control required type="text" placeholder="Enter your home address" value={user.firstName}/>
               </Form.Group>
             </Col>
             <Col sm={3} className="mb-3">
               <Form.Group id="addressNumber">
                 <Form.Label>Number</Form.Label>
-                <Form.Control required type="number" placeholder="No." />
+                <Form.Control required type="number" placeholder="No." value={user.firstName}/>
               </Form.Group>
             </Col>
-          </Row>
-          <Row>
+          </Row> */}
+          {/* <Row>
             <Col sm={4} className="mb-3">
               <Form.Group id="city">
                 <Form.Label>City</Form.Label>
-                <Form.Control required type="text" placeholder="City" />
+                <Form.Control required type="text" placeholder="City" value={user.firstName}/>
               </Form.Group>
             </Col>
             <Col sm={4} className="mb-3">
@@ -160,13 +158,13 @@ export const GeneralInfoForm = () => {
             <Col sm={4}>
               <Form.Group id="zip">
                 <Form.Label>ZIP</Form.Label>
-                <Form.Control required type="tel" placeholder="ZIP" />
+                <Form.Control required type="tel" placeholder="ZIP" value={user.firstName}/>
               </Form.Group>
             </Col>
-          </Row>
-          <div className="mt-3">
+          </Row> */}
+          {/* <div className="mt-3">
             <Button variant="primary" type="submit">Save All</Button>
-          </div>
+          </div> */}
         </Form>
       </Card.Body>
     </Card>

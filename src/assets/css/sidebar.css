@@ -1,0 +1,12 @@
+.right-icon {
+    margin-left: auto; 
+    transition: transform 0.3s ease;
+}
+
+.accordion-button[aria-expanded="true"] .right-icon {
+    transform: rotate(180deg);
+}
+
+.sidebar-inner .accordion-button::after{
+    display: none;
+}

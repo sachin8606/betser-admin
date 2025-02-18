@@ -30,7 +30,7 @@ export default [
         "id": 3,
         "name": "Settings",
         "image": SettingsImg,
-        "link": Routes.Settings.path
+        "link": Routes.Profile.path
     },
     {
         "id": 4,

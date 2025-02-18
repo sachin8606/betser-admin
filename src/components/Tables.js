@@ -1,16 +1,21 @@
 
-import React from "react";
+import React, { use, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faArrowDown, faArrowUp, faEdit, faEllipsisH, faExternalLinkAlt, faEye, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Nav, Card, Image, Button, Table, Dropdown, ProgressBar, Pagination, ButtonGroup } from '@themesberg/react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import { Routes } from "../routes";
 import { pageVisits, pageTraffic, pageRanking } from "../data/tables";
 import transactions from "../data/transactions";
 import commands from "../data/commands";
 import { dateToLocal } from "../utils/dateTimeConverter";
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserDetails, fetchUsers } from "../features/adminSlice";
+import { getRequests } from "../features/requestSlice";
+import "../assets/css/pagination.css";
+import Loader from "./Loader";
+import "../assets/css/common.css";
 const ValueChange = ({ value, suffix }) => {
   const valueIcon = value < 0 ? faAngleDown : faAngleUp;
   const valueTxtColor = value < 0 ? "text-danger" : "text-success";
@@ -188,7 +193,13 @@ export const RankingTable = () => {
   );
 };
 
-export const UsersTable = ({users}) => {
+export const UsersTable = ({ users }) => {
+
+  const { totalPagesUsers, currentPageUser, usersFilter, currentUser, loading } = useSelector(state => state.admin)
+
+  const history = useHistory()
+
+  const dispatch = useDispatch()
 
   const TableRow = (props) => {
     const { id, createdAt, phone, email, firstName, lastName, nickName, index } = props
@@ -237,21 +248,22 @@ export const UsersTable = ({users}) => {
               </span>
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item>
+              <Dropdown.Item onClick={() => history.push('/users/' + id)}>
                 <FontAwesomeIcon icon={faEye} className="me-2" /> View Details
               </Dropdown.Item>
-              <Dropdown.Item>
+              {/* <Dropdown.Item>
                 <FontAwesomeIcon icon={faEdit} className="me-2" /> Edit
               </Dropdown.Item>
               <Dropdown.Item className="text-danger">
                 <FontAwesomeIcon icon={faTrashAlt} className="me-2" /> Remove
-              </Dropdown.Item>
+              </Dropdown.Item> */}
             </Dropdown.Menu>
           </Dropdown>
         </td>
       </tr>
     );
   };
+
 
   return (
     <Card border="light" className="table-wrapper table-responsive shadow-sm">
@@ -269,32 +281,166 @@ export const UsersTable = ({users}) => {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(users) && users.map((t, index) => (
-              <TableRow key={`users-${t.id}`} {...t} index={index} />
-            ))}
+            {loading ? <div style={{ marginLeft: "35vw" }}><Loader /></div> :users && users.length<1 ?<h4 className="found-nothing-text">No data found</h4>:
+              Array.isArray(users) && users.map((t, index) => (
+                <TableRow key={`users-${t.id}`} {...t} index={index} />
+              ))}
           </tbody>
         </Table>
-        <Card.Footer className="px-3 border-0 d-lg-flex align-items-center justify-content-between">
-          <Nav>
-            <Pagination className="mb-2 mb-lg-0">
-              <Pagination.Prev>
-                Previous
-              </Pagination.Prev>
-              <Pagination.Item active>1</Pagination.Item>
-              <Pagination.Item>2</Pagination.Item>
-              <Pagination.Item>3</Pagination.Item>
-              <Pagination.Item>4</Pagination.Item>
-              <Pagination.Item>5</Pagination.Item>
-              <Pagination.Next>
-                Next
-              </Pagination.Next>
-            </Pagination>
-          </Nav>
-        </Card.Footer>
+        {
+          users && users.length > 0 && <Card.Footer className="px-3 border-0 d-lg-flex align-items-center justify-content-center">
+            <Nav>
+              <Pagination className="mb-2 mb-lg-0">
+                <Pagination.Prev
+                  onClick={() => dispatch(fetchUsers({ filter: usersFilter, page: currentPageUser - 1 }))}
+                  disabled={currentPageUser === 1 || totalPagesUsers === 0}
+                >
+                  Previous
+                </Pagination.Prev>
+
+                {totalPagesUsers &&
+                  [...Array(totalPagesUsers)].map((_, index) => (
+                    <Pagination.Item
+                      key={index + 1}
+                      active={index + 1 === currentPageUser}
+                      onClick={!(currentPageUser === index + 1) ? () => dispatch(fetchUsers({ filters: usersFilter, page: index + 1 })) : <></>}
+                    >
+                      {index + 1}
+                    </Pagination.Item>
+                  ))}
+
+                <Pagination.Next
+                  onClick={() => dispatch(fetchUsers({ filter: usersFilter, page: currentPageUser + 1 }))}
+                  disabled={currentPageUser === totalPagesUsers || totalPagesUsers === 0}
+                >
+                  Next
+                </Pagination.Next>
+              </Pagination>
+            </Nav>
+
+          </Card.Footer>
+        }
       </Card.Body>
     </Card>
   );
 };
+
+export const RequestsTable = ({ handleUpdate, status }) => {
+
+  const dispatch = useDispatch();
+  const { filter, currentPage, totalPages, loading, error, requests } = useSelector((state) => state.request);
+
+  const RequestsRow = (props) => {
+    const { id, updatedAt, type, description, User, index } = props
+    return (
+      <tr>
+        <td>
+          <Card.Link as={Link} to={Routes.Invoice.path} className="fw-normal">
+            {((currentPage - 1) * 10) + (index + 1)}
+          </Card.Link>
+        </td>
+        <td>
+          <span className="fw-normal">
+            {id}
+          </span>
+        </td>
+        <td>
+          <span className="fw-normal">
+            {User?.firstName + " " + User?.lastName}<br />
+            {"+" + User?.countryCode + " " + User?.phone}
+          </span>
+        </td>
+        <td>
+          <span className="fw-normal">
+            {type}
+          </span>
+        </td>
+        <td>
+          <span className="fw-normal">
+            {description}
+          </span>
+        </td>
+        <td>
+          <span className={`fw-normal`}>
+            {dateToLocal(updatedAt)}
+          </span>
+        </td>
+        {
+          status === "" ? <></> : <td>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleUpdate(id, status)}
+              block
+            >
+              {status === "progress" ? "Mark as In Progress" : status === "resolved" ? "Mark as Resolved" : <></>}
+            </Button>
+          </td>
+        }
+      </tr>
+    );
+  }
+
+
+  return (
+    <Card border="light" className="table-wrapper table-responsive shadow-sm">
+      <Card.Body className="pt-0">
+        <Table hover className="user-table align-items-center">
+          <thead>
+            <tr>
+              <th className="border-bottom">S.No.</th>
+              <th className="border-bottom">Request Id</th>
+              <th className="border-bottom">User</th>
+              <th className="border-bottom">Type</th>
+              <th className="border-bottom">Description</th>
+              <th className="border-bottom">Date</th>
+              {status === "" ? <></> : <th className="border-bottom">Action</th>}
+
+            </tr>
+          </thead>
+          <tbody>
+            {
+              loading ? <div style={{ marginLeft: "35vw" }}><Loader /></div> : requests && requests.length < 1 ?<h4 className="found-nothing-text">No data found.</h4>:Array.isArray(requests) && requests.map((t, index) => (
+                <RequestsRow key={`requests-${t.id}`} {...t} index={index} />
+              ))}
+
+
+          </tbody>
+        </Table>
+        {requests && requests.length > 0 &&
+          <Card.Footer className="px-3 border-0 d-lg-flex align-items-center justify-content-center">
+            <Nav className="nav-pagination">
+              <Pagination className="mb-2 mb-lg-0">
+                <Pagination.Prev
+                  onClick={() => dispatch(getRequests({ filters: filter, page: currentPage - 1 }))}
+                  disabled={currentPage === 1 || totalPages === 0}
+                >
+                  Previous
+                </Pagination.Prev>
+                {totalPages &&
+                  [...Array(totalPages)].map((_, index) => (
+                    <Pagination.Item
+                      key={index + 1} active={index + 1 === currentPage}
+                      onClick={!(currentPage === index + 1) ? () => dispatch(getRequests({ filters: filter, page: index + 1 })) : <></>}
+                    >
+                      {index + 1}
+                    </Pagination.Item>
+                  ))}
+                <Pagination.Next
+                  onClick={() => dispatch(getRequests({ filters: filter, page: currentPage + 1 }))}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  Next
+                </Pagination.Next>
+              </Pagination>
+            </Nav>
+          </Card.Footer>
+        }
+      </Card.Body>
+    </Card>
+  )
+}
+
 
 export const CommandsTable = () => {
   const TableRow = (props) => {

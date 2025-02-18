@@ -3,70 +3,71 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCog, faHome, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Form, Button, ButtonGroup, Breadcrumb, InputGroup, Dropdown } from '@themesberg/react-bootstrap';
 import { UsersTable } from "../components/Tables";
-import { fetchUsers } from "../features/adminSlice";
+import { fetchUsers, updateUserSearchInput } from "../features/adminSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { exportUsersData } from "../api/adminApi";
 
 export default () => {
   const dispatch = useDispatch();
-  const {users} = useSelector(state => state.admin);
+  const { users, usersFilter,loading } = useSelector(state => state.admin);
 
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(fetchUsers())
-  },[])
+    return () => dispatch(updateUserSearchInput(null))
+  }, [])
 
-  useEffect(()=>{
-    console.log(users)
-  },[users])
+  useEffect(() => {
+    console.log(usersFilter)
+  }, [usersFilter])
+
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault()
+    try {
+      if (e.key === "Enter") {
+        dispatch(fetchUsers({ filters: usersFilter }))
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const handleExport = async () => {
+    const res = await exportUsersData({filters:usersFilter})
+    console.log(res)
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "users_export.xlsx"; // Set filename
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
 
   return (
     <>
       <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-        <div className="d-block mb-4 mb-md-0">
-          <Breadcrumb className="d-none d-md-inline-block" listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}>
-            <Breadcrumb.Item><FontAwesomeIcon icon={faHome} /></Breadcrumb.Item>
-            <Breadcrumb.Item>Volt</Breadcrumb.Item>
-            <Breadcrumb.Item active>Users</Breadcrumb.Item>
-          </Breadcrumb>
-          <h4>Users</h4>
-        </div>
         <div className="btn-toolbar mb-2 mb-md-0">
           <ButtonGroup>
-            <Button variant="outline-primary" size="sm">Export</Button>
+            <Button variant="outline-primary" size="sm" onClick={handleExport}>Export</Button>
           </ButtonGroup>
+        </div>
+        <div className="d-flex align-items-center">
+          <Form className="navbar-search" onSubmit={(e) => e.preventDefault()}>
+            <Form.Group id="topbarSearch">
+              <InputGroup className="input-group-merge search-bar">
+                <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text>
+                <Form.Control type="text" placeholder="Search" onChange={(e) => dispatch(updateUserSearchInput(e.target.value))} onKeyUp={(e) => handleSearch(e)} />
+              </InputGroup>
+            </Form.Group>
+          </Form>
         </div>
       </div>
 
-      <div className="table-settings mb-4">
-        <Row className="justify-content-between align-items-center">
-          <Col xs={8} md={6} lg={3} xl={4}>
-            <InputGroup>
-              <InputGroup.Text>
-                <FontAwesomeIcon icon={faSearch} />
-              </InputGroup.Text>
-              <Form.Control type="text" placeholder="Search" />
-            </InputGroup>
-          </Col>
-          <Col xs={4} md={2} xl={1} className="ps-md-0 text-end">
-            <Dropdown as={ButtonGroup}>
-              <Dropdown.Toggle split as={Button} variant="link" className="text-dark m-0 p-0">
-                <span className="icon icon-sm icon-gray">
-                  <FontAwesomeIcon icon={faCog} />
-                </span>
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="dropdown-menu-xs dropdown-menu-right">
-                <Dropdown.Item className="fw-bold text-dark">Show</Dropdown.Item>
-                <Dropdown.Item className="d-flex fw-bold">
-                  10 <span className="icon icon-small ms-auto"><FontAwesomeIcon icon={faCheck} /></span>
-                </Dropdown.Item>
-                <Dropdown.Item className="fw-bold">20</Dropdown.Item>
-                <Dropdown.Item className="fw-bold">30</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-        </Row>
-      </div>
-
-      <UsersTable users={users}/>
+      <UsersTable users={users} />
     </>
   );
 };

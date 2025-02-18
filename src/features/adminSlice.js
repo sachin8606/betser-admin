@@ -8,12 +8,13 @@ import {
   getHelpRequests,
   acknowledgeHelpRequest,
   getAdminDetails,
+  getUserDetails,
 } from "../api/adminApi";
 
 export const validateToken = createAsyncThunk("admin/validateToken", async (_, thunkAPI) => {
   try {
     const response = await getAdminDetails();
-    return response.data;  // Assuming the response includes admin details
+    return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response?.data || "Invalid token");
   }
@@ -24,6 +25,7 @@ export const adminLogin = createAsyncThunk("admin/login", async (credentials, th
   try {
     const response = await loginAdmin(credentials);
     localStorage.setItem("token", response.data.token);
+    localStorage.setItem("betser-admin", response.data.id)
     return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data);
@@ -41,9 +43,18 @@ export const adminRegister = createAsyncThunk("admin/register", async (adminData
 });
 
 // Async thunk for fetching all users
-export const fetchUsers = createAsyncThunk("admin/getUsers", async (_, thunkAPI) => {
+export const fetchUsers = createAsyncThunk("admin/getUsers", async (data, thunkAPI) => {
   try {
-    const response = await getUsers();
+    const response = await getUsers(data);
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+export const fetchUserDetails = createAsyncThunk("admin/getUserDetails", async (id, thunkAPI) => {
+  try {
+    const response = await getUserDetails(id);
     return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data);
@@ -98,11 +109,19 @@ const adminSlice = createSlice({
     loading: false,
     error: null,
     tokenValidated: false,
+    currentUser: {},
+    totalPagesUsers: null,
+    currentPageUser: null,
+    usersFilter: {}
   },
   reducers: {
     logout: (state) => {
       state.adminInfo = null;
-      // localStorage.removeItem("token");
+      localStorage.clear()
+    },
+    updateUserSearchInput: (state, action) => {
+      const value = action.payload;
+      state.usersFilter.searchKeyword = value;
     },
   },
   extraReducers: (builder) => {
@@ -159,9 +178,25 @@ const adminSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload;
+        state.users = action.payload.users;
+        state.totalPagesUsers = action.payload.totalPages;
+        state.currentPageUser = action.payload.currentPage;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.error || "Failed to fetch users";
+      })
+
+      // Fetch User Details
+      .addCase(fetchUserDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+      })
+      .addCase(fetchUserDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.error || "Failed to fetch users";
       })
@@ -214,5 +249,5 @@ const adminSlice = createSlice({
   },
 });
 
-export const { logout } = adminSlice.actions;
+export const { logout, updateUserSearchInput } = adminSlice.actions;
 export default adminSlice.reducer;

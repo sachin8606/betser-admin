@@ -1,0 +1,4 @@
+.nav-pagination ul{
+    width: 400px !important; 
+    overflow-x: scroll;
+}

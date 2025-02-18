@@ -1,18 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBoxOpen, faCartArrowDown, faChartPie, faChevronDown, faClipboard, faCommentDots, faFileAlt, faPlus, faRocket, faStore } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Button, Dropdown } from '@themesberg/react-bootstrap';
-import { ChoosePhotoWidget, ProfileCardWidget } from "../components/Widgets";
+import { ChoosePhotoWidget, ProfileCardWidget, TeamMembersWidget } from "../components/Widgets";
 import { GeneralInfoForm } from "../components/Forms";
-
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserDetails } from "../features/adminSlice";
 
 
 export default () => {
+  const dispatch = useDispatch();
+  const {currentUser} = useSelector(state=>state.admin);
+  const { id } = useParams();
+
+  useEffect(()=>{
+    dispatch(fetchUserDetails(id));
+  },[])
+
+
   return (
     <>
       <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-        <Dropdown>
+        {/* <Dropdown>
           <Dropdown.Toggle as={Button} variant="secondary" className="text-dark me-2">
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             <span>New</span>
@@ -63,28 +74,29 @@ export default () => {
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
-        </div>
+        </div> */}
       </div>
 
       <Row>
         <Col xs={12} xl={8}>
-          <GeneralInfoForm />
+          <GeneralInfoForm user={currentUser}/>
+          <TeamMembersWidget contacts={currentUser?.EmergencyContacts}/>
         </Col>
-
         <Col xs={12} xl={4}>
           <Row>
             <Col xs={12}>
-              <ProfileCardWidget />
+              <ProfileCardWidget user={currentUser}/>
             </Col>
-            <Col xs={12}>
+            {/* <Col xs={12}>
               <ChoosePhotoWidget
                 title="Select profile photo"
                 photo={Profile3}
               />
-            </Col>
+            </Col> */}
           </Row>
         </Col>
       </Row>
+
     </>
   );
 };

@@ -28,12 +28,12 @@
 			& > .nav-link {
 				color: $light;
 				background-color: #2e3650;
-				border: $border-width solid lighten( $dark, 20% );
+				// border: $border-width solid lighten( $dark, 20% );
 			}
 		}
 		.nav-link {
 			color: $light;
-			border: $border-width solid $dark;
+			// border: $border-width solid $dark;
 			&:hover {
 				color: $light;
 				background-color: #2e3650;
