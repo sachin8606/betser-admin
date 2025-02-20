@@ -131,7 +131,7 @@ export default function AdminChat() {
 
               return (
                 <li key={user.id} style={styles.userItem} onClick={() => handleUserClick(user.id)}>
-                  <img src={`https://i.pravatar.cc/40?img=${user.id}`} alt={user.id} style={styles.userAvatar} />
+                  <img src={user.avatar} alt={user.id} style={styles.userAvatar} />
                   {user.firstName + " " + user.lastName} <br/>{onlineUsers.includes(user.id) ? "Online" : "Offline"}
                   {unreadMessages[user.id] && <span style={styles.unreadBadge}>{unreadMessages[user.id]}</span>}
                 </li>
