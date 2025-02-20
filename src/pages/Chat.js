@@ -9,6 +9,7 @@ import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import format from "date-fns/format"
 import Loader from "../components/Loader";
 import { useAlert } from "react-alert";
+import { playMessageIncomingSound } from "../utils/playSound";
 const socket = io(process.env.REACT_APP_SOCKET_API);
 
 export default function AdminChat() {
@@ -29,8 +30,8 @@ export default function AdminChat() {
     socket.emit("register", { userId: adminId, role: "admin" });
     socket.on("receiveMessage", (message) => {
       alert.info(`You got a new message.`)
+      playMessageIncomingSound()
       if (message.senderId === id) {
-        console.log(message, id)
         dispatch(addNewMessage(message));
       } else {
         setUnreadMessages((prev) => ({
@@ -80,9 +81,7 @@ export default function AdminChat() {
 
   const sendMessage = ({ type = "text", mediaUrl = null } = {}) => {
     if (!(type === "text") && !mediaUrl) {
-      console.log(type, newMessage)
       if (newMessage === "" || newMessage === undefined || newMessage === null) {
-        console.log("ndk")
         return
       }
     }
