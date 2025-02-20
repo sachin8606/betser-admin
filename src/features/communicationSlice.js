@@ -49,7 +49,7 @@ const communicationSlice = createSlice({
       const newMessage = action.payload;
       console.log(newMessage)
       console.log(state.userId)
-      if (Number(newMessage.senderId) === Number(state.userId) || Number(newMessage.receiverId) === Number(state.userId)) {
+      if (newMessage.senderId === state.userId|| newMessage.receiverId === state.userId) {
         state.currentChat.push(newMessage);
       }
     },

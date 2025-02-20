@@ -54,6 +54,7 @@
     "simplebar-react": "^2.3.0",
     "socket.io-client": "^4.8.1"
   },
+  "homepage":"https://sachin8606.github.io/betser-admin/",
   "scripts": {
     "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",

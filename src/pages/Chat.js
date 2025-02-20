@@ -24,17 +24,12 @@ export default function AdminChat() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [adminId, setAdminId] = useState(localStorage.getItem("betser-admin"))
   const [curUserName, setCurUserName] = useState("")
-
-  useEffect(()=>{
-    return() => dispatch(resetChat())
-  },[])
-
   useEffect(() => {
     dispatch(setChatSelectedUserId(id))
     socket.emit("register", { userId: adminId, role: "admin" });
     socket.on("receiveMessage", (message) => {
       alert.info(`You got a new message.`)
-      if (Number(message.senderId) === Number(id)) {
+      if (message.senderId === id) {
         console.log(message, id)
         dispatch(addNewMessage(message));
       } else {
@@ -55,11 +50,12 @@ export default function AdminChat() {
     });
     return () => {
       socket.off("receiveMessage");
+      dispatch(resetChat())
     };
   }, [id, dispatch]);
 
   useEffect(() => {
-    const userName = userList.filter((user) => Number(user.id) === Number(id))
+    const userName = userList.filter((user) => user.id === id)
     if(userName.length > 0)
       setCurUserName(userName[0].firstName + " " + userName[0].lastName)
   }, [userList])
@@ -104,6 +100,7 @@ export default function AdminChat() {
     dispatch(addNewMessage(messageData));
     setNewMessage("");
   };
+
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -214,9 +211,9 @@ export default function AdminChat() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               style={styles.messageInput}
-              onKeyUp={(e) => { if (e.key === "Enter") sendMessage() }}
+              onKeyUp={(e) => { if (e.key === "Enter") sendMessage({type:"text"}) }}
             />
-            <button onClick={sendMessage} style={styles.sendButton}>
+            <button onClick={()=>sendMessage({type:"text"})} style={styles.sendButton}>
               Send
             </button>
           </div>
