@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/betser-admin/static/css/main.7ea5f096.chunk.css",
-    "main.js": "/betser-admin/static/js/main.ffb521c8.chunk.js",
-    "main.js.map": "/betser-admin/static/js/main.ffb521c8.chunk.js.map",
+    "main.css": "/betser-admin/static/css/main.02476b47.chunk.css",
+    "main.js": "/betser-admin/static/js/main.63e8f1a6.chunk.js",
+    "main.js.map": "/betser-admin/static/js/main.63e8f1a6.chunk.js.map",
     "runtime-main.js": "/betser-admin/static/js/runtime-main.5224011c.js",
     "runtime-main.js.map": "/betser-admin/static/js/runtime-main.5224011c.js.map",
     "static/css/2.e94d5e4c.chunk.css": "/betser-admin/static/css/2.e94d5e4c.chunk.css",
-    "static/js/2.c943ffcc.chunk.js": "/betser-admin/static/js/2.c943ffcc.chunk.js",
-    "static/js/2.c943ffcc.chunk.js.map": "/betser-admin/static/js/2.c943ffcc.chunk.js.map",
+    "static/js/2.927f163e.chunk.js": "/betser-admin/static/js/2.927f163e.chunk.js",
+    "static/js/2.927f163e.chunk.js.map": "/betser-admin/static/js/2.927f163e.chunk.js.map",
     "index.html": "/betser-admin/index.html",
-    "precache-manifest.909a144556db32659e17d8d051552103.js": "/betser-admin/precache-manifest.909a144556db32659e17d8d051552103.js",
+    "precache-manifest.87860941f790ed1346cacc57ae388ad2.js": "/betser-admin/precache-manifest.87860941f790ed1346cacc57ae388ad2.js",
     "service-worker.js": "/betser-admin/service-worker.js",
     "static/css/2.e94d5e4c.chunk.css.map": "/betser-admin/static/css/2.e94d5e4c.chunk.css.map",
-    "static/css/main.7ea5f096.chunk.css.map": "/betser-admin/static/css/main.7ea5f096.chunk.css.map",
-    "static/js/2.c943ffcc.chunk.js.LICENSE.txt": "/betser-admin/static/js/2.c943ffcc.chunk.js.LICENSE.txt",
+    "static/css/main.02476b47.chunk.css.map": "/betser-admin/static/css/main.02476b47.chunk.css.map",
+    "static/js/2.927f163e.chunk.js.LICENSE.txt": "/betser-admin/static/js/2.927f163e.chunk.js.LICENSE.txt",
     "static/media/404.jpg": "/betser-admin/static/media/404.9ba4b7cb.jpg",
     "static/media/404.svg": "/betser-admin/static/media/404.a925745b.svg",
     "static/media/500.jpg": "/betser-admin/static/media/500.192d8f70.jpg",
@@ -33,6 +33,7 @@
     "static/media/mockup-calendar-presentation.png": "/betser-admin/static/media/mockup-calendar-presentation.b2d9831a.png",
     "static/media/mockup-map-presentation.png": "/betser-admin/static/media/mockup-map-presentation.fc6d4c75.png",
     "static/media/mockup-presentation.png": "/betser-admin/static/media/mockup-presentation.77a4c6a8.png",
+    "static/media/notify.wav": "/betser-admin/static/media/notify.8646c43b.wav",
     "static/media/overview.jpg": "/betser-admin/static/media/overview.00a52613.jpg",
     "static/media/profile-cover.jpg": "/betser-admin/static/media/profile-cover.9992e0ee.jpg",
     "static/media/profile-picture-1.jpg": "/betser-admin/static/media/profile-picture-1.4d26e151.jpg",
@@ -59,8 +60,8 @@
   "entrypoints": [
     "static/js/runtime-main.5224011c.js",
     "static/css/2.e94d5e4c.chunk.css",
-    "static/js/2.c943ffcc.chunk.js",
-    "static/css/main.7ea5f096.chunk.css",
-    "static/js/main.ffb521c8.chunk.js"
+    "static/js/2.927f163e.chunk.js",
+    "static/css/main.02476b47.chunk.css",
+    "static/js/main.63e8f1a6.chunk.js"
   ]
 }
