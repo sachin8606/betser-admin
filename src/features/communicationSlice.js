@@ -33,9 +33,9 @@ export const uploadMedia = createAsyncThunk("communication/uploadMedia", async (
 const communicationSlice = createSlice({
   name: "communication",
   initialState: {
-    currentChat: [],   // Stores chat messages for the selected user
-    userList: [],      // List of users for the admin panel
-    userId: null,      // Stores selected user ID
+    currentChat: [], 
+    userList: [], 
+    userId: null,
     loading: false,
     error: null,
     totalPages: null,
@@ -55,6 +55,11 @@ const communicationSlice = createSlice({
     },
     setChatSelectedUserId: (state,action) => {
       state.userId = action.payload
+    },
+    resetChat:(state,action)=>{
+      state.currentChat = []
+      state.userList= []  
+      state.userId = null
     }
   },
   extraReducers: (builder) => {
@@ -100,7 +105,7 @@ const communicationSlice = createSlice({
 });
 
 // ✅ Export the new action
-export const { addNewMessage,setChatSelectedUserId } = communicationSlice.actions;
+export const { addNewMessage,setChatSelectedUserId,resetChat } = communicationSlice.actions;
 
 // ✅ Export the reducer
 export default communicationSlice.reducer;

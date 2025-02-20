@@ -14,7 +14,7 @@ import ReactHero from "../assets/img/technologies/react-hero-logo.svg";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 import Logo from "../assets/img/brand/light.svg"
 import { useSelector } from "react-redux";
-import { faFacebookMessenger, faServicestack } from "@fortawesome/free-brands-svg-icons";
+import { faConfluence, faFacebookMessenger, faServicestack } from "@fortawesome/free-brands-svg-icons";
 
 export default (props = {}) => {
   const location = useLocation();
@@ -113,6 +113,7 @@ export default (props = {}) => {
               <NavItem title="Services" icon={faServicestack} link={Routes.Services.path} />
               <NavItem title="Emergency Services" icon={faMedkit} link={Routes.EmergencyServices.path} />
               <NavItem title="Chat" icon={faFacebookMessenger} link={Routes.Chat.path} />
+              <NavItem title="Settings" icon={faConfluence} link={Routes.Config.path} />
               <CollapsableNavItem eventKey="requests/" title="Requests" icon={faBoxOpen}>
                 <NavItem title="Pending" link={Routes.PendingRequests.path} />
                 <NavItem title="In Progress" link={Routes.ProgressRequests.path} />

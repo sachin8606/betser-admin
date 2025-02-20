@@ -5,7 +5,7 @@ import communicationReducer from "../features/communicationSlice";
 import categoryReducer from "../features/categorySlice";
 import notificationReducer from "../features/notificationSlice";
 import requestsReducer from "../features/requestSlice";
-
+import settingReducer from "../features/settingSlice";
 const store = configureStore({
   reducer: {
     admin: adminReducer,
@@ -13,7 +13,8 @@ const store = configureStore({
     communication:communicationReducer,
     category:categoryReducer,
     notification:notificationReducer,
-    request:requestsReducer
+    request:requestsReducer,
+    setting:settingReducer
   },
 });
 

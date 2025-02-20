@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, InputGroup } from '@themesberg/react-bootstrap';
 import { UsersTable } from "../components/Tables";
 // import { fetchUsers, updateUserSearchInput } from "../features/adminSlice";
@@ -9,8 +9,13 @@ import { RequestsTable } from "../../components/Tables";
 import { useAlert } from "react-alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import ImageModal from "../components/ImageModal";
 
 export default () => {
+
+    // Image Modal states
+    const [imageModalShow, setImageModalShow] = useState(false)
+    const [imageUrl, setImageUrl] = useState("")
     const alert = useAlert()
     const dispatch = useDispatch();
     const { requests, filter, loading } = useSelector(state => state.request);
@@ -20,7 +25,6 @@ export default () => {
         dispatch(getRequests({ filters: { "status": "resolved" } }))
         return () => dispatch(resetFilter())
     }, [])
-
 
     // Handle search
     const handleSearch = (e) => {
@@ -32,6 +36,12 @@ export default () => {
         } catch (err) {
             console.log(err)
         }
+    }
+
+    // Preview image
+    const previewImage = (url) => {
+        setImageUrl(url)
+        setImageModalShow(true)
     }
     return (
         <>
@@ -52,7 +62,8 @@ export default () => {
                     </Form>
                 </div>
             </div>
-            <RequestsTable requests={requests} handleUpdate={null} status="" />
+            <RequestsTable requests={requests} previewImage={previewImage} handleUpdate={null} status="" />
+            <ImageModal show={imageModalShow} onClose={() => setImageModalShow(false)} imageUrl={imageUrl} />
         </>
     );
 };

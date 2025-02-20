@@ -55,6 +55,7 @@ import Chat from './Chat';
 import Pending from './requests/Pending'
 import InProgress from './requests/InProgress'
 import ResolvedRequests from './requests/Resolved'
+import Config from './Config';
 import { messaging, onMessage, requestPermission } from '../config/firebase';
 import { validateToken } from '../features/adminSlice';
 
@@ -156,6 +157,7 @@ export default () => {
       <RouteWithSidebar exact path={Routes.ChatId.path} component={Chat} />
       <RouteWithSidebar exact path={Routes.Users.path} component={Users} />
       <RouteWithSidebar exact path={Routes.Services.path} component={Services} />
+      <RouteWithSidebar exact path={Routes.Config.path} component={Config} />
       <RouteWithSidebar exact path={Routes.EmergencyServices.path} component={EmergencyServices} />
       <RouteWithSidebar exact path={Routes.Profile.path} component={Settings} />
       <RouteWithSidebar exact path={Routes.BootstrapTables.path} component={BootstrapTables} />

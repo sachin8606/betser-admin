@@ -9,6 +9,7 @@ export const Routes = {
     PendingRequests:{path:"/requests/pending"},
     ProgressRequests:{path:"/requests/in-progress"},
     ResolvedRequests:{path:"/requests/resolved"},
+    Config:{path:"/config"},
     Services:{path:"/services"},
     EmergencyServices:{path:"/emergency-services"},
     Upgrade: { path: "/upgrade" },

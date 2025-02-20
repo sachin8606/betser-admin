@@ -268,10 +268,10 @@ export const UsersTable = ({ users }) => {
   return (
     <Card border="light" className="table-wrapper table-responsive shadow-sm">
       <Card.Body className="pt-0">
-        <Table hover className="user-table align-items-center">
+        <Table hover className="table align-items-center">
           <thead>
             <tr>
-              <th className="border-bottom">S.No.</th>
+              <th className="border-bottom sn-table">S.No.</th>
               <th className="border-bottom">User Id</th>
               <th className="border-bottom">Name</th>
               <th className="border-bottom">Nickname</th>
@@ -325,13 +325,13 @@ export const UsersTable = ({ users }) => {
   );
 };
 
-export const RequestsTable = ({ handleUpdate, status }) => {
+export const RequestsTable = ({ handleUpdate, status,previewImage }) => {
 
   const dispatch = useDispatch();
   const { filter, currentPage, totalPages, loading, error, requests } = useSelector((state) => state.request);
 
   const RequestsRow = (props) => {
-    const { id, updatedAt, type, description, User, index } = props
+    const { id, updatedAt, type, description, User,mediaUrl,mediaType, index} = props
     return (
       <tr>
         <td>
@@ -361,6 +361,26 @@ export const RequestsTable = ({ handleUpdate, status }) => {
           </span>
         </td>
         <td>
+          <span className="fw-normal">
+                    <div className="table-media-container">
+                      {mediaType === "image" && (
+                        <img src={mediaUrl} onClick={()=>previewImage(mediaUrl)}alt="Request media" />
+                      )}
+                      {mediaType === "video" && (
+                        <video controls>
+                          <source src={mediaUrl} type="video/mp4" />
+                        </video>
+                      )}
+                      {mediaType === "audio" && (
+                        <audio controls>
+                          <source src={mediaUrl} type="audio/mpeg" />
+                        </audio>
+                      )}
+                      {mediaType === null && <></>}
+                      </div>
+          </span>
+        </td>
+        <td>
           <span className={`fw-normal`}>
             {dateToLocal(updatedAt)}
           </span>
@@ -385,14 +405,15 @@ export const RequestsTable = ({ handleUpdate, status }) => {
   return (
     <Card border="light" className="table-wrapper table-responsive shadow-sm">
       <Card.Body className="pt-0">
-        <Table hover className="user-table align-items-center">
+        <Table hover className="table align-items-center">
           <thead>
             <tr>
-              <th className="border-bottom">S.No.</th>
+              <th className="border-bottom sn-table">S.No.</th>
               <th className="border-bottom">Request Id</th>
               <th className="border-bottom">User</th>
               <th className="border-bottom">Type</th>
               <th className="border-bottom">Description</th>
+              <th className="border-bottom">Media</th>
               <th className="border-bottom">Date</th>
               {status === "" ? <></> : <th className="border-bottom">Action</th>}
 

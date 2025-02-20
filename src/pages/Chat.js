@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
-import { getChatList, getChatUser, addNewMessage, setChatSelectedUserId, uploadMedia } from "../features/communicationSlice";
+import { getChatList, getChatUser, addNewMessage, setChatSelectedUserId, uploadMedia, resetChat } from "../features/communicationSlice";
 import io from "socket.io-client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClock, faImage, faMicrophone, faMusic, faUpload, faVideo } from "@fortawesome/free-solid-svg-icons";
@@ -24,6 +24,10 @@ export default function AdminChat() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [adminId, setAdminId] = useState(localStorage.getItem("betser-admin"))
   const [curUserName, setCurUserName] = useState("")
+
+  useEffect(()=>{
+    return() => dispatch(resetChat())
+  },[])
 
   useEffect(() => {
     dispatch(setChatSelectedUserId(id))
