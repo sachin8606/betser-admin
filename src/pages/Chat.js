@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
-import { getChatList, getChatUser, addNewMessage, setChatSelectedUserId, uploadMedia, resetChat } from "../features/communicationSlice";
+import { getChatList, getChatUser, addNewMessage, setChatSelectedUserId, uploadMedia, resetChat, updateUnreadMessages } from "../features/communicationSlice";
 import io from "socket.io-client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClock, faImage, faMicrophone, faMusic, faUpload, faVideo } from "@fortawesome/free-solid-svg-icons";
@@ -9,8 +9,7 @@ import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import format from "date-fns/format"
 import Loader from "../components/Loader";
 import { useAlert } from "react-alert";
-import { playMessageIncomingSound } from "../utils/playSound";
-const socket = io(process.env.REACT_APP_SOCKET_API);
+import useSocket from "../services/socket.service";
 
 export default function AdminChat() {
   const alert = useAlert()
@@ -18,28 +17,15 @@ export default function AdminChat() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { adminInfo } = useSelector((state) => state.admin)
-  const { currentChat, loading, userList, userId } = useSelector((state) => state.communication);
+  const { currentChat, loading, userList, userId, unreadMessages } = useSelector((state) => state.communication);
   const [newMessage, setNewMessage] = useState("");
-  const [unreadMessages, setUnreadMessages] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [adminId, setAdminId] = useState(localStorage.getItem("betser-admin"))
   const [curUserName, setCurUserName] = useState("")
+  const [adminId, setAdminId] = useState(localStorage.getItem("betser-admin"))
+  const { socket } = useSocket()
   useEffect(() => {
     dispatch(setChatSelectedUserId(id))
-    socket.emit("register", { userId: adminId, role: "admin" });
-    socket.on("receiveMessage", (message) => {
-      alert.info(`You got a new message.`)
-      playMessageIncomingSound()
-      if (message.senderId === id) {
-        dispatch(addNewMessage(message));
-      } else {
-        setUnreadMessages((prev) => ({
-          ...prev,
-          [message.senderId]: (prev[message.senderId] || 0) + 1,
-        }));
-      }
-    });
     socket.on("onlineUsers", (onlineUserIds) => {
       setOnlineUsers(onlineUserIds);
     });
@@ -49,30 +35,27 @@ export default function AdminChat() {
         status === "online" ? [...prev, userId] : prev.filter((id) => id !== userId)
       );
     });
+    if (id) {
+      dispatch(getChatUser({ id }));
+      socket.emit("selectUser", { adminId: "admin", userId: id });
+      const updatedUnread = { ...unreadMessages };
+      delete updatedUnread[id];
+      dispatch(updateUnreadMessages(updatedUnread))
+    }
+    dispatch(getChatList());
     return () => {
-      socket.off("receiveMessage");
       dispatch(resetChat())
+      socket.off("onlineUsers");
+      socket.off("userStatus");
     };
   }, [id, dispatch]);
 
   useEffect(() => {
     const userName = userList.filter((user) => user.id === id)
-    if(userName.length > 0)
+    if (userName.length > 0)
       setCurUserName(userName[0].firstName + " " + userName[0].lastName)
   }, [userList])
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getChatUser({ id }));
-      socket.emit("selectUser", { adminId: "admin", userId: id });
-      setUnreadMessages((prev) => {
-        const updatedUnread = { ...prev };
-        delete updatedUnread[id];
-        return updatedUnread;
-      });
-    }
-    dispatch(getChatList());
-  }, [id, dispatch]);
 
   const handleUserClick = (userId) => {
     history.push(`/chat/${userId}`);
@@ -109,9 +92,7 @@ export default function AdminChat() {
 
     const formData = new FormData();
     formData.append("file", file);
-    console.log(formData)
     const res = await dispatch(uploadMedia(formData)).unwrap();
-    console.log(res)
     const fileTypeCategory = file.type.startsWith("image")
       ? "image"
       : file.type.startsWith("video")
@@ -132,7 +113,7 @@ export default function AdminChat() {
               return (
                 <li key={user.id} style={styles.userItem} onClick={() => handleUserClick(user.id)}>
                   <img src={user.avatar} alt={user.id} style={styles.userAvatar} />
-                  {user.firstName + " " + user.lastName} <br/>{onlineUsers.includes(user.id) ? "Online" : "Offline"}
+                  {user.firstName + " " + user.lastName} <br />{onlineUsers.includes(user.id) ? "Online" : "Offline"}
                   {unreadMessages[user.id] && <span style={styles.unreadBadge}>{unreadMessages[user.id]}</span>}
                 </li>
               )
@@ -145,8 +126,8 @@ export default function AdminChat() {
       <div style={styles.chatContainer}>
         <div style={styles.header}>{id ? curUserName : "Users"}</div>
         <div style={styles.messageList}>
-          {loading ? <div><Loader/></div>:
-          currentChat &&
+          {loading ? <div><Loader /></div> :
+            currentChat &&
             currentChat.map((message) => {
               const messageDate = new Date(message.createdAt);
               const formattedDate =
@@ -171,7 +152,7 @@ export default function AdminChat() {
                         </video>
                       )}
                       {message.type === "audio" && (
-                        <audio controls style={{...styles.media,"height":"23px"}}>
+                        <audio controls style={{ ...styles.media, "height": "23px" }}>
                           <source src={message.mediaUrl} type="audio/mpeg" />
                         </audio>
                       )}
@@ -210,9 +191,9 @@ export default function AdminChat() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               style={styles.messageInput}
-              onKeyUp={(e) => { if (e.key === "Enter") sendMessage({type:"text"}) }}
+              onKeyUp={(e) => { if (e.key === "Enter") sendMessage({ type: "text" }) }}
             />
-            <button onClick={()=>sendMessage({type:"text"})} style={styles.sendButton}>
+            <button onClick={() => sendMessage({ type: "text" })} style={styles.sendButton}>
               Send
             </button>
           </div>

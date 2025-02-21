@@ -58,6 +58,10 @@ import ResolvedRequests from './requests/Resolved'
 import Config from './Config';
 import { messaging, onMessage, requestPermission } from '../config/firebase';
 import { validateToken } from '../features/adminSlice';
+import {addNewMessage} from "../features/communicationSlice";
+import { useAlert } from 'react-alert';
+import { playMessageIncomingSound } from '../utils/playSound';
+import useSocket from '../services/socket.service';
 
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
@@ -114,11 +118,13 @@ const RouteWithSidebar = ({ component: Component, ...rest }) => {
 };
 
 export default () => {
-
-
+  const notifyAlert = useAlert()
   const { adminInfo } = useSelector(state => state.admin);
+    const { currentChat, loading, userList, userId } = useSelector((state) => state.communication);
   const dispatch = useDispatch();
-  const history = useHistory()
+  const history = useHistory();
+  const adminId = localStorage.getItem("betser-admin");
+  useSocket(adminId)
 
   useEffect(() => {
     if (!adminInfo?.token && localStorage.getItem("token")) {
@@ -129,16 +135,14 @@ export default () => {
     }
   }, [])
 
-  
-
   useEffect(() => {
-    console.log(adminInfo)
     requestPermission();
     onMessage(messaging, (payload) => {
       console.log('Message received:', payload);
       alert(`New Notification: ${payload.notification.title} - ${payload.notification.body}`);
     });
   }, [adminInfo])
+
 
   return (
     <Switch>

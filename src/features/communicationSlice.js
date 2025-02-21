@@ -35,6 +35,7 @@ const communicationSlice = createSlice({
   initialState: {
     currentChat: [], 
     userList: [], 
+    unreadMessages:{},
     userId: null,
     loading: false,
     error: null,
@@ -47,8 +48,6 @@ const communicationSlice = createSlice({
     // ✅ Add New Message to Current Chat
     addNewMessage: (state, action) => {
       const newMessage = action.payload;
-      console.log(newMessage)
-      console.log(state.userId)
       if (newMessage.senderId === state.userId|| newMessage.receiverId === state.userId) {
         state.currentChat.push(newMessage);
       }
@@ -60,7 +59,10 @@ const communicationSlice = createSlice({
       state.currentChat = []
       state.userList= []  
       state.userId = null
-    }
+    },
+    updateUnreadMessages: (state, action) => {
+      state.unreadMessages = action.payload;
+   }
   },
   extraReducers: (builder) => {
     builder
@@ -105,7 +107,7 @@ const communicationSlice = createSlice({
 });
 
 // ✅ Export the new action
-export const { addNewMessage,setChatSelectedUserId,resetChat } = communicationSlice.actions;
+export const { addNewMessage,setChatSelectedUserId,resetChat,updateUnreadMessages } = communicationSlice.actions;
 
 // ✅ Export the reducer
 export default communicationSlice.reducer;
