@@ -21,7 +21,7 @@ export const ProfileCardWidget = ({user}) => {
     <Card border="light" className="text-center p-0 mb-4">
       <div style={{ backgroundImage: `url(${ProfileCover})` }} className="profile-cover rounded-top" />
       <Card.Body className="pb-5">
-        <Card.Img src={Profile1} alt="Neil Portrait" className="user-avatar large-avatar rounded-circle mx-auto mt-n7 mb-4" />
+        <Card.Img src={user?.avatar} alt="Neil Portrait" className="user-avatar large-avatar rounded-circle mx-auto mt-n7 mb-4" />
         <Card.Title>{user.firstName +" "+user.lastName}</Card.Title>
         <Card.Text className="text-gray mb-4"></Card.Text>
         <Button variant="secondary" size="sm" onClick={()=>history.push('/chat/'+user.id)}>Send Message</Button>
