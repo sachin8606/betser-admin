@@ -171,7 +171,7 @@ export default function AdminChat() {
                         </video>
                       )}
                       {message.type === "audio" && (
-                        <audio controls style={styles.media}>
+                        <audio controls style={{...styles.media,"height":"23px"}}>
                           <source src={message.mediaUrl} type="audio/mpeg" />
                         </audio>
                       )}
