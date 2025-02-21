@@ -9,11 +9,13 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default () => {
     const [inputDisabled, setInputDisabled] = useState(true)
+    const [inputDisabled2, setInputDisabled2] = useState(true)
     const dispatch = useDispatch();
     const alert = useAlert();
     const { setting, loading, error } = useSelector(state => state.setting)
     const [settings, setSettings] = useState({
         help_care_number: "",
+        learnUrl: ""
     });
 
 
@@ -22,7 +24,7 @@ export default () => {
     }, [])
 
     useEffect(() => {
-        setSettings({ help_care_number: setting?.help_care_number })
+        setSettings({ help_care_number: setting?.help_care_number, learnUrl: setting?.learnUrl })
     }, [setting])
 
     const handleChange = (e) => {
@@ -47,6 +49,7 @@ export default () => {
             }
             dispatch(getSettings())
             setInputDisabled(true)
+            setInputDisabled2(true)
         }
         catch (err) {
             alert.error("Error")
@@ -69,8 +72,24 @@ export default () => {
                             disabled={inputDisabled}
                             placeholder="Enter BE Help Care Number"
                         />
-                        <InputGroup.Text style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0" }}>
-                           {inputDisabled ?  <FontAwesomeIcon onClick={()=>setInputDisabled(false)} icon={faPencilAlt} />:<></>}
+                        <InputGroup.Text onClick={() => setInputDisabled(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
+                        </InputGroup.Text>
+                    </InputGroup>
+                </Form.Group>
+                <Form.Group className="mt-2">
+                    <Form.Label>Learn Url</Form.Label>
+                    <InputGroup>
+                        <Form.Control
+                            type="text"
+                            name="learnUrl"
+                            value={settings.learnUrl}
+                            onChange={handleChange}
+                            disabled={inputDisabled2}
+                            placeholder="Enter Learn Url"
+                        />
+                        <InputGroup.Text onClick={() => setInputDisabled2(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled2 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
                         </InputGroup.Text>
                     </InputGroup>
                 </Form.Group>
