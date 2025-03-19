@@ -9,3 +9,9 @@ export const formatDistanceToString = (date) => {
     const relativeTime = formatDistanceToNow(newDate, { addSuffix: true });
     return relativeTime
 }
+
+export const dateToLocalDateTime = (date) => {
+    if(!date) return '';
+    const localDate = new Date(date);
+    return localDate.toLocaleString();
+}

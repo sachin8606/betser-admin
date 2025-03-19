@@ -9,7 +9,7 @@ import { Routes } from "../routes";
 import { pageVisits, pageTraffic, pageRanking } from "../data/tables";
 import transactions from "../data/transactions";
 import commands from "../data/commands";
-import { dateToLocal } from "../utils/dateTimeConverter";
+import { dateToLocal, dateToLocalDateTime } from "../utils/dateTimeConverter";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserDetails, fetchUsers } from "../features/adminSlice";
 import { getRequests } from "../features/requestSlice";
@@ -382,7 +382,7 @@ export const RequestsTable = ({ handleUpdate, status,previewImage }) => {
         </td>
         <td>
           <span className={`fw-normal`}>
-            {dateToLocal(updatedAt)}
+            {dateToLocalDateTime(updatedAt)}
           </span>
         </td>
         {
