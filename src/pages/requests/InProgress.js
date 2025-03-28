@@ -14,6 +14,7 @@ export default () => {
     const [show, setShow] = useState(false)
     const [selectedId, setSelectedId] = useState(null)
     const [currStatus, setCurrStatus] = useState(null)
+    const [commentRec, setCommentRec] = useState("")
 
     // Image Modal states
     const [imageModalShow, setImageModalShow] = useState(false)
@@ -33,8 +34,9 @@ export default () => {
         setShow(false)
         setSelectedId(null)
         setCurrStatus(null)
+        setCommentRec("")
         try {
-            await dispatch(updateRequestStatus({ id: selectedId, data: { status: currStatus } })).unwrap()
+            await dispatch(updateRequestStatus({ id: selectedId, data: { status: currStatus,comment:commentRec  } })).unwrap()
             alert.success("Status updated.")
             dispatch(getRequests({ filters: { "status": "progress" } }))
         } catch (err) {
@@ -42,11 +44,12 @@ export default () => {
         }
     }
 
-    const handleUpdate = async (id, status) => {
+    const handleUpdate = async (id, status,comment) => {
         try {
             setCurrStatus(status)
             setSelectedId(id)
             setShow(true)
+            setCommentRec(comment)
         }
         catch (err) {
             alert.error("error")

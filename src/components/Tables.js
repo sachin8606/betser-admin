@@ -1,5 +1,5 @@
 
-import React, { use, useEffect } from "react";
+import React, { use, useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faArrowDown, faArrowUp, faEdit, faEllipsisH, faExternalLinkAlt, faEye, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Nav, Card, Image, Button, Table, Dropdown, ProgressBar, Pagination, ButtonGroup } from '@themesberg/react-bootstrap';
@@ -237,7 +237,7 @@ export const UsersTable = ({ users }) => {
         </td>
         <td>
           <span className={`fw-normal`}>
-            {dateToLocal(createdAt)}
+            {dateToLocalDateTime(createdAt)}
           </span>
         </td>
         <td>
@@ -278,10 +278,11 @@ export const UsersTable = ({ users }) => {
               <th className="border-bottom">Phone</th>
               <th className="border-bottom">Email</th>
               <th className="border-bottom">Created on</th>
+              <th className="border-bottom">Action</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? <div style={{ marginLeft: "35vw" }}><Loader /></div> :users && users.length<1 ?<h4 className="found-nothing-text">No data found</h4>:
+            {loading ? <div style={{ marginLeft: "35vw" }}><Loader /></div> : users && users.length < 1 ? <h4 className="found-nothing-text">No data found</h4> :
               Array.isArray(users) && users.map((t, index) => (
                 <TableRow key={`users-${t.id}`} {...t} index={index} />
               ))}
@@ -325,13 +326,18 @@ export const UsersTable = ({ users }) => {
   );
 };
 
-export const RequestsTable = ({ handleUpdate, status,previewImage }) => {
+export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
 
   const dispatch = useDispatch();
   const { filter, currentPage, totalPages, loading, error, requests } = useSelector((state) => state.request);
 
   const RequestsRow = (props) => {
-    const { id, updatedAt, type, description, User,mediaUrl,mediaType, index} = props
+    const [note, setNote] = useState("")
+    const { id, updatedAt, type, description, User, mediaUrl, mediaType, comment, index } = props
+
+    useEffect(() => {
+      setNote(comment)
+    }, [])
     return (
       <tr>
         <td>
@@ -362,22 +368,22 @@ export const RequestsTable = ({ handleUpdate, status,previewImage }) => {
         </td>
         <td>
           <span className="fw-normal">
-                    <div className="table-media-container">
-                      {mediaType === "image" && (
-                        <img src={mediaUrl} onClick={()=>previewImage(mediaUrl)}alt="Request media" />
-                      )}
-                      {mediaType === "video" && (
-                        <video controls>
-                          <source src={mediaUrl} type="video/mp4" />
-                        </video>
-                      )}
-                      {mediaType === "audio" && (
-                        <audio controls>
-                          <source src={mediaUrl} type="audio/mpeg" />
-                        </audio>
-                      )}
-                      {mediaType === null && <></>}
-                      </div>
+            <div className="table-media-container">
+              {mediaType === "image" && (
+                <img src={mediaUrl} onClick={() => previewImage(mediaUrl)} alt="Request media" />
+              )}
+              {mediaType === "video" && (
+                <video controls>
+                  <source src={mediaUrl} type="video/mp4" />
+                </video>
+              )}
+              {mediaType === "audio" && (
+                <audio controls>
+                  <source src={mediaUrl} type="audio/mpeg" />
+                </audio>
+              )}
+              {mediaType === null && <></>}
+            </div>
           </span>
         </td>
         <td>
@@ -385,18 +391,20 @@ export const RequestsTable = ({ handleUpdate, status,previewImage }) => {
             {dateToLocalDateTime(updatedAt)}
           </span>
         </td>
-        {
-          status === "" ? <></> : <td>
+        <td>
+          <textarea placeholder="Enter comment here" className="request_sts_comment" onChange={(e) => setNote(e.target.value)} value={note} disabled={status === "" ? true : false}></textarea>
+          {status === "" ? <></> :
+
             <Button
               variant="primary"
               size="sm"
-              onClick={() => handleUpdate(id, status)}
+              onClick={() => handleUpdate(id, status, note)}
               block
             >
               {status === "progress" ? "Mark as In Progress" : status === "resolved" ? "Mark as Resolved" : <></>}
             </Button>
-          </td>
-        }
+          }
+        </td>
       </tr>
     );
   }
@@ -415,13 +423,13 @@ export const RequestsTable = ({ handleUpdate, status,previewImage }) => {
               <th className="border-bottom">Description</th>
               <th className="border-bottom">Media</th>
               <th className="border-bottom">Date</th>
-              {status === "" ? <></> : <th className="border-bottom">Action</th>}
+              {status === "" ? <th className="border-bottom">Comment</th> : <th className="border-bottom">Action</th>}
 
             </tr>
           </thead>
           <tbody>
             {
-              loading ? <div style={{ marginLeft: "35vw" }}><Loader /></div> : requests && requests.length < 1 ?<h4 className="found-nothing-text">No data found.</h4>:Array.isArray(requests) && requests.map((t, index) => (
+              loading ? <div style={{ marginLeft: "35vw" }}><Loader /></div> : requests && requests.length < 1 ? <h4 className="found-nothing-text">No data found.</h4> : Array.isArray(requests) && requests.map((t, index) => (
                 <RequestsRow key={`requests-${t.id}`} {...t} index={index} />
               ))}
 
