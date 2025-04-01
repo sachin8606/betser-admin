@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/betser-admin/precache-manifest.69c2282a7e4ca17d6b16d05da1652c32.js"
+  "/betser-admin/precache-manifest.8b4a66afb99ad46649e0273767ad656f.js"
 );
 
 self.addEventListener('message', (event) => {
