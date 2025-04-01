@@ -202,7 +202,7 @@ export const UsersTable = ({ users }) => {
   const dispatch = useDispatch()
 
   const TableRow = (props) => {
-    const { id, createdAt, phone, email, firstName, lastName, nickName, index } = props
+    const { id, createdAt, phone, email, firstName, lastName, nickName,device,index } = props
     return (
       <tr>
         <td>
@@ -233,6 +233,11 @@ export const UsersTable = ({ users }) => {
         <td>
           <span className={`fw-normal`}>
             {email}
+          </span>
+        </td>
+        <td>
+          <span className={`fw-normal`}>
+            {device}
           </span>
         </td>
         <td>
@@ -277,6 +282,7 @@ export const UsersTable = ({ users }) => {
               <th className="border-bottom">Nickname</th>
               <th className="border-bottom">Phone</th>
               <th className="border-bottom">Email</th>
+              <th className="border-bottom">Device</th>
               <th className="border-bottom">Created on</th>
               <th className="border-bottom">Action</th>
             </tr>

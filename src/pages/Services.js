@@ -25,6 +25,13 @@ const CategoryManager = () => {
     dispatch(getCategory())
   }, [])
 
+  const resetStates = () => {
+    setHealthcareNewSubcategoryDescription("");
+    setHealthcareNewSubcategoryName("");
+    setNonHealthcareNewSubcategoryDescription("");
+    setNonHealthcareNewSubcategoryName("");
+  }
+
   const addHealthcareSubcategory = async () => {
     let isValid = false;
     try {
@@ -37,6 +44,7 @@ const CategoryManager = () => {
         }
         await dispatch(addSubCategory(newData)).unwrap()
         dispatch(getCategory())
+        resetStates()
         alert.success("Updated successfully")
       }
     }
@@ -74,6 +82,7 @@ const CategoryManager = () => {
         }
         await dispatch(addSubCategory(newData)).unwrap()
         dispatch(getCategory())
+        resetStates()
         alert.success("Updated successfully")
       }
     } catch (err) {
@@ -110,6 +119,9 @@ const CategoryManager = () => {
     nhcHead: {
       background: "#AEC7E6",
       color: "#FFFFFF"
+    },
+    deleteBtn:{
+      height:"fit-content"
     }
   }
 
@@ -135,6 +147,7 @@ const CategoryManager = () => {
                       <Button
                         variant="danger"
                         size="sm"
+                        style={styles.deleteBtn}
                         onClick={() => handleDelete(subcategory.id)}
                       >
                         Delete
@@ -190,6 +203,7 @@ const CategoryManager = () => {
                       <Button
                         variant="danger"
                         size="sm"
+                        style={styles.deleteBtn}
                         onClick={() => handleDelete(subcategory.id)}
                       >
                         Delete
