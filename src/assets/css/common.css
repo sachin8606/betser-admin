@@ -77,3 +77,8 @@
     outline: none; 
   }
   
+
+  /* chat */
+  .chat-messages-cntn{
+    word-wrap: break-word;
+  }

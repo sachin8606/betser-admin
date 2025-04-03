@@ -140,7 +140,7 @@ export default function AdminChat() {
                   key={message.id}
                   style={message.senderRole === "admin" ? styles.adminMessage : styles.userMessage}
                 >
-                  <div>{message.message}</div>
+                  <div className="chat-messages-cntn">{message.message}</div>
                   {message.type !== "text" && (
                     <div>
                       {message.type === "image" && (
