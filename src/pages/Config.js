@@ -10,12 +10,16 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 export default () => {
     const [inputDisabled, setInputDisabled] = useState(true)
     const [inputDisabled2, setInputDisabled2] = useState(true)
+    const [inputDisabled3, setInputDisabled3] = useState(true)
+    const [inputDisabled4, setInputDisabled4] = useState(true)
     const dispatch = useDispatch();
     const alert = useAlert();
     const { setting, loading, error } = useSelector(state => state.setting)
     const [settings, setSettings] = useState({
         help_care_number: "",
-        learnUrl: ""
+        learnUrl: "",
+        email:"",
+        address:""
     });
 
 
@@ -24,7 +28,7 @@ export default () => {
     }, [])
 
     useEffect(() => {
-        setSettings({ help_care_number: setting?.help_care_number, learnUrl: setting?.learnUrl })
+        setSettings({ help_care_number: setting?.help_care_number, learnUrl: setting?.learnUrl,email:setting?.email,address:setting?.email })
     }, [setting])
 
     const handleChange = (e) => {
@@ -35,7 +39,7 @@ export default () => {
     const handleSubmit = async (e) => {
         try {
             e.preventDefault();
-            if (settings.help_care_number === "" || settings.help_care_number === null) {
+            if (settings.help_care_number === "" || settings.help_care_number === undefined ||settings.help_care_number.trim() === ""|| settings.learnUrl === undefined ||  settings.learnUrl === undefined ||settings.learnUrl.trim() === ""||  settings.email === undefined ||  settings.email.trim()=== "" || settings.email === null ||  settings.address === null ||  settings.address.trim()=== "" || settings.address === undefined) {
                 alert.info("Please enter a valid value");
                 return;
             }
@@ -90,6 +94,38 @@ export default () => {
                         />
                         <InputGroup.Text onClick={() => setInputDisabled2(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
                             {inputDisabled2 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
+                        </InputGroup.Text>
+                    </InputGroup>
+                </Form.Group>
+                <Form.Group className="mt-2">
+                    <Form.Label>Email</Form.Label>
+                    <InputGroup>
+                        <Form.Control
+                            type="text"
+                            name="email"
+                            value={settings.email}
+                            onChange={handleChange}
+                            disabled={inputDisabled3}
+                            placeholder="Enter Email"
+                        />
+                        <InputGroup.Text onClick={() => setInputDisabled3(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled3 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
+                        </InputGroup.Text>
+                    </InputGroup>
+                </Form.Group>
+                <Form.Group className="mt-2">
+                    <Form.Label>Address</Form.Label>
+                    <InputGroup>
+                        <Form.Control
+                            type="text"
+                            name="address"
+                            value={settings.address}
+                            onChange={handleChange}
+                            disabled={inputDisabled4}
+                            placeholder="Enter Address"
+                        />
+                        <InputGroup.Text onClick={() => setInputDisabled4(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled4 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
                         </InputGroup.Text>
                     </InputGroup>
                 </Form.Group>

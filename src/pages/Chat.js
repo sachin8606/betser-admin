@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import { getChatList, getChatUser, addNewMessage, setChatSelectedUserId, uploadMedia, resetChat, updateUnreadMessages } from "../features/communicationSlice";
-import io from "socket.io-client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faClock, faImage, faMicrophone, faMusic, faUpload, faVideo } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faClock, faImage, faMicrophone, faMusic, faStop, faUpload, faVideo } from "@fortawesome/free-solid-svg-icons";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import format from "date-fns/format"
 import Loader from "../components/Loader";
@@ -24,6 +23,17 @@ export default function AdminChat() {
   const [curUserName, setCurUserName] = useState("")
   const [adminId, setAdminId] = useState(localStorage.getItem("betser-admin"))
   const { socket } = useSocket()
+  
+  // Media recording states
+  const [isRecordingVideo, setIsRecordingVideo] = useState(false);
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  const [recordedVideo, setRecordedVideo] = useState(null);
+  const [recordedAudio, setRecordedAudio] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const videoPreviewRef = useRef(null);
+  const streamRef = useRef(null);
+  const chunksRef = useRef([]);
+
   useEffect(() => {
     dispatch(setChatSelectedUserId(id))
     socket.on("onlineUsers", (onlineUserIds) => {
@@ -47,6 +57,9 @@ export default function AdminChat() {
       dispatch(resetChat())
       socket.off("onlineUsers");
       socket.off("userStatus");
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, [id, dispatch]);
 
@@ -56,11 +69,9 @@ export default function AdminChat() {
       setCurUserName(userName[0].firstName + " " + userName[0].lastName)
   }, [userList])
 
-
   const handleUserClick = (userId) => {
     history.push(`/chat/${userId}`);
   };
-
 
   const sendMessage = ({ type = "text", mediaUrl = null } = {}) => {
     if (!(type === "text") && !mediaUrl) {
@@ -83,7 +94,6 @@ export default function AdminChat() {
     setNewMessage("");
   };
 
-
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -99,6 +109,116 @@ export default function AdminChat() {
         ? "video" :
         file.type.startsWith("audio") ? "audio" : null;
     sendMessage({ type: fileTypeCategory, mediaUrl: res.mediaUrl })
+  };
+
+  // Start video recording
+  const startVideoRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      streamRef.current = stream;
+      
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+        videoPreviewRef.current.play();
+      }
+      
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      chunksRef.current = [];
+      
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+      
+      mediaRecorderRef.current.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+        setRecordedVideo(blob);
+        
+        // Upload and send the recorded video
+        const formData = new FormData();
+        formData.append("file", blob, "recorded-video.webm");
+        try {
+          const res = await dispatch(uploadMedia(formData)).unwrap();
+          sendMessage({ type: "video", mediaUrl: res.mediaUrl });
+        } catch (error) {
+          alert.error("Failed to upload video");
+        }
+        
+        // Clean up
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+        if (videoPreviewRef.current) {
+          videoPreviewRef.current.srcObject = null;
+        }
+      };
+      
+      mediaRecorderRef.current.start();
+      setIsRecordingVideo(true);
+    } catch (error) {
+      alert.error("Cannot access camera and microphone");
+      console.error("Error accessing media devices:", error);
+    }
+  };
+
+  // Stop video recording
+  const stopVideoRecording = () => {
+    if (mediaRecorderRef.current && isRecordingVideo) {
+      mediaRecorderRef.current.stop();
+      setIsRecordingVideo(false);
+    }
+  };
+
+  // Start audio recording
+  const startAudioRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      chunksRef.current = [];
+      
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+      
+      mediaRecorderRef.current.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        setRecordedAudio(blob);
+        
+        // Upload and send the recorded audio
+        const formData = new FormData();
+        formData.append("file", blob, "recorded-audio.webm");
+        try {
+          const res = await dispatch(uploadMedia(formData)).unwrap();
+          sendMessage({ type: "audio", mediaUrl: res.mediaUrl });
+        } catch (error) {
+          alert.error("Failed to upload audio");
+        }
+        
+        // Clean up
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+      };
+      
+      mediaRecorderRef.current.start();
+      setIsRecordingAudio(true);
+    } catch (error) {
+      alert.error("Cannot access microphone");
+      console.error("Error accessing media devices:", error);
+    }
+  };
+
+  // Stop audio recording
+  const stopAudioRecording = () => {
+    if (mediaRecorderRef.current && isRecordingAudio) {
+      mediaRecorderRef.current.stop();
+      setIsRecordingAudio(false);
+    }
   };
 
   return (
@@ -164,38 +284,65 @@ export default function AdminChat() {
             })}
         </div>
         {id && (
-          <div style={styles.inputContainer}>
-            <div style={styles.mediaIcons}>
-              {/* Upload Image */}
-              <label>
-                <FontAwesomeIcon icon={faImage} style={styles.icon} title="Upload Image" />
-                <input type="file" accept="image/*" hidden onChange={handleFileUpload} />
-              </label>
+          <div>
+            {/* Video Preview */}
+            {isRecordingVideo && (
+              <div style={styles.previewContainer}>
+                <video ref={videoPreviewRef} style={styles.videoPreview} muted />
+                <button onClick={stopVideoRecording} style={styles.stopButton}>
+                  <FontAwesomeIcon icon={faStop} /> Stop Recording
+                </button>
+              </div>
+            )}
+            
+            {/* Audio Recording Indicator */}
+            {isRecordingAudio && (
+              <div style={styles.recordingIndicator}>
+                <div style={styles.pulsingDot}></div>
+                <span>Recording Audio...</span>
+                <button onClick={stopAudioRecording} style={styles.stopButton}>
+                  <FontAwesomeIcon icon={faStop} /> Stop
+                </button>
+              </div>
+            )}
+            
+            <div style={styles.inputContainer}>
+              <div style={styles.mediaIcons}>
+                {/* Upload Image */}
+                <label>
+                  <FontAwesomeIcon icon={faImage} style={styles.icon} title="Upload Image" />
+                  <input type="file" hidden onChange={handleFileUpload} />
+                </label>
 
-              {/* Upload Video */}
-              <label>
-                <FontAwesomeIcon icon={faVideo} style={styles.icon} title="Upload Video" />
-                <input type="file" accept="video/*" hidden onChange={handleFileUpload} />
-              </label>
+                {/* Video Recording */}
+                <FontAwesomeIcon 
+                  icon={faVideo} 
+                  style={isRecordingVideo ? {...styles.icon, color: 'red'} : styles.icon} 
+                  title={isRecordingVideo ? "Stop Recording Video" : "Record Video"}
+                  onClick={isRecordingVideo ? stopVideoRecording : startVideoRecording}
+                />
 
-              {/* Upload Audio */}
-              <label>
-                <FontAwesomeIcon icon={faMicrophone} style={styles.icon} title="Upload Audio" />
-                <input type="file" accept="audio/*" hidden onChange={handleFileUpload} />
-              </label>
+                {/* Audio Recording */}
+                <FontAwesomeIcon 
+                  icon={faMicrophone} 
+                  style={isRecordingAudio ? {...styles.icon, color: 'red'} : styles.icon} 
+                  title={isRecordingAudio ? "Stop Recording Audio" : "Record Audio"}
+                  onClick={isRecordingAudio ? stopAudioRecording : startAudioRecording}
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder="Your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                style={styles.messageInput}
+                onKeyUp={(e) => { if (e.key === "Enter") sendMessage({ type: "text" }) }}
+              />
+              <button onClick={() => sendMessage({ type: "text" })} style={styles.sendButton}>
+                Send
+              </button>
             </div>
-
-            <input
-              type="text"
-              placeholder="Your message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              style={styles.messageInput}
-              onKeyUp={(e) => { if (e.key === "Enter") sendMessage({ type: "text" }) }}
-            />
-            <button onClick={() => sendMessage({ type: "text" })} style={styles.sendButton}>
-              Send
-            </button>
           </div>
         )}
       </div>
@@ -229,5 +376,46 @@ const styles = {
   userTimeStamp: {
     fontSize: "12px", color: "#888", marginTop: "5px",
     textAlign: "right",
+  },
+  previewContainer: {
+    position: 'relative',
+    margin: '10px 0',
+    borderRadius: '10px',
+    overflow: 'hidden',
+  },
+  videoPreview: {
+    width: '100%',
+    maxHeight: '200px',
+    objectFit: 'cover',
+    borderRadius: '10px',
+    backgroundColor: '#000',
+  },
+  stopButton: {
+    position: 'absolute',
+    bottom: '10px',
+    right: '10px',
+    backgroundColor: 'rgba(255, 0, 0, 0.7)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '20px',
+    padding: '5px 10px',
+    cursor: 'pointer',
+  },
+  recordingIndicator: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px',
+    backgroundColor: '#f8f8f8',
+    borderRadius: '10px',
+    margin: '10px 0',
+  },
+  pulsingDot: {
+    width: '12px',
+    height: '12px',
+    backgroundColor: 'red',
+    borderRadius: '50%',
+    marginRight: '10px',
+    animation: 'pulse 1.5s infinite',
+    boxShadow: '0 0 0 rgba(255, 0, 0, 0.4)',
   },
 };
