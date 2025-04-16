@@ -39,10 +39,6 @@ export default () => {
     const handleSubmit = async (e) => {
         try {
             e.preventDefault();
-            if (settings.help_care_number === "" || settings.help_care_number === undefined ||settings.help_care_number.trim() === ""|| settings.learnUrl === undefined ||  settings.learnUrl === undefined ||settings.learnUrl.trim() === ""||  settings.email === undefined ||  settings.email.trim()=== "" || settings.email === null ||  settings.address === null ||  settings.address.trim()=== "" || settings.address === undefined) {
-                alert.info("Please enter a valid value");
-                return;
-            }
             if (setting && setting?.id) {
                 await dispatch(updateSettings({ id: setting.id, data: settings })).unwrap()
                 alert.success("Updated successfully")
