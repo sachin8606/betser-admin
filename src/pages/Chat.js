@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import { getChatList, getChatUser, addNewMessage, setChatSelectedUserId, uploadMedia, resetChat, updateUnreadMessages } from "../features/communicationSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faClock, faImage, faMicrophone, faMusic, faStop, faUpload, faVideo } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faClock, faImage, faMicrophone, faMusic, faStop, faPaperPlane, faTimes, faTrash, faUpload, faVideo } from "@fortawesome/free-solid-svg-icons";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import format from "date-fns/format"
 import Loader from "../components/Loader";
@@ -29,8 +29,13 @@ export default function AdminChat() {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState(null);
   const [recordedAudio, setRecordedAudio] = useState(null);
+  const [showVideoConfirmation, setShowVideoConfirmation] = useState(false);
+  const [showAudioConfirmation, setShowAudioConfirmation] = useState(false);
+  const [videoURL, setVideoURL] = useState("");
+  const [audioURL, setAudioURL] = useState("");
   const mediaRecorderRef = useRef(null);
   const videoPreviewRef = useRef(null);
+  const videoConfirmRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
 
@@ -57,8 +62,15 @@ export default function AdminChat() {
       dispatch(resetChat())
       socket.off("onlineUsers");
       socket.off("userStatus");
+      // Clean up any active streams and URLs when component unmounts
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (videoURL) {
+        URL.revokeObjectURL(videoURL);
+      }
+      if (audioURL) {
+        URL.revokeObjectURL(audioURL);
       }
     };
   }, [id, dispatch]);
@@ -79,6 +91,7 @@ export default function AdminChat() {
         return
       }
     }
+    
     const messageData = {
       senderId: adminId,
       senderRole: "admin",
@@ -135,17 +148,14 @@ export default function AdminChat() {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' });
         setRecordedVideo(blob);
         
-        // Upload and send the recorded video
-        const formData = new FormData();
-        formData.append("file", blob, "recorded-video.webm");
-        try {
-          const res = await dispatch(uploadMedia(formData)).unwrap();
-          sendMessage({ type: "video", mediaUrl: res.mediaUrl });
-        } catch (error) {
-          alert.error("Failed to upload video");
-        }
+        // Create URL for preview
+        const url = URL.createObjectURL(blob);
+        setVideoURL(url);
         
-        // Clean up
+        // Show confirmation UI
+        setShowVideoConfirmation(true);
+        
+        // Clean up recording stream
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
@@ -170,6 +180,37 @@ export default function AdminChat() {
     }
   };
 
+  // Confirm and send video
+  const confirmAndSendVideo = async () => {
+    if (!recordedVideo) return;
+    
+    // Upload and send the recorded video
+    const formData = new FormData();
+    formData.append("file", recordedVideo, "recorded-video.webm");
+    try {
+      const res = await dispatch(uploadMedia(formData)).unwrap();
+      sendMessage({ type: "video", mediaUrl: res.mediaUrl });
+      
+      // Clean up
+      URL.revokeObjectURL(videoURL);
+      setVideoURL("");
+      setRecordedVideo(null);
+      setShowVideoConfirmation(false);
+    } catch (error) {
+      alert.error("Failed to upload video");
+    }
+  };
+
+  // Cancel video recording
+  const cancelVideoRecording = () => {
+    if (videoURL) {
+      URL.revokeObjectURL(videoURL);
+    }
+    setVideoURL("");
+    setRecordedVideo(null);
+    setShowVideoConfirmation(false);
+  };
+
   // Start audio recording
   const startAudioRecording = async () => {
     try {
@@ -189,17 +230,14 @@ export default function AdminChat() {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setRecordedAudio(blob);
         
-        // Upload and send the recorded audio
-        const formData = new FormData();
-        formData.append("file", blob, "recorded-audio.webm");
-        try {
-          const res = await dispatch(uploadMedia(formData)).unwrap();
-          sendMessage({ type: "audio", mediaUrl: res.mediaUrl });
-        } catch (error) {
-          alert.error("Failed to upload audio");
-        }
+        // Create URL for preview
+        const url = URL.createObjectURL(blob);
+        setAudioURL(url);
         
-        // Clean up
+        // Show confirmation UI
+        setShowAudioConfirmation(true);
+        
+        // Clean up recording stream
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
@@ -219,6 +257,37 @@ export default function AdminChat() {
       mediaRecorderRef.current.stop();
       setIsRecordingAudio(false);
     }
+  };
+
+  // Confirm and send audio
+  const confirmAndSendAudio = async () => {
+    if (!recordedAudio) return;
+    
+    // Upload and send the recorded audio
+    const formData = new FormData();
+    formData.append("file", recordedAudio, "recorded-audio.webm");
+    try {
+      const res = await dispatch(uploadMedia(formData)).unwrap();
+      sendMessage({ type: "audio", mediaUrl: res.mediaUrl });
+      
+      // Clean up
+      URL.revokeObjectURL(audioURL);
+      setAudioURL("");
+      setRecordedAudio(null);
+      setShowAudioConfirmation(false);
+    } catch (error) {
+      alert.error("Failed to upload audio");
+    }
+  };
+
+  // Cancel audio recording
+  const cancelAudioRecording = () => {
+    if (audioURL) {
+      URL.revokeObjectURL(audioURL);
+    }
+    setAudioURL("");
+    setRecordedAudio(null);
+    setShowAudioConfirmation(false);
   };
 
   return (
@@ -285,13 +354,29 @@ export default function AdminChat() {
         </div>
         {id && (
           <div>
-            {/* Video Preview */}
+            {/* Video Recording Live Preview */}
             {isRecordingVideo && (
               <div style={styles.previewContainer}>
                 <video ref={videoPreviewRef} style={styles.videoPreview} muted />
                 <button onClick={stopVideoRecording} style={styles.stopButton}>
                   <FontAwesomeIcon icon={faStop} /> Stop Recording
                 </button>
+              </div>
+            )}
+            
+            {/* Video Confirmation UI */}
+            {showVideoConfirmation && (
+              <div style={styles.confirmationContainer}>
+                <div style={styles.confirmationHeader}>Confirm Video Recording</div>
+                <video ref={videoConfirmRef} src={videoURL} style={styles.confirmationMedia} controls />
+                <div style={styles.confirmationButtons}>
+                  <button onClick={cancelVideoRecording} style={styles.cancelButton}>
+                    <FontAwesomeIcon icon={faTimes} /> Cancel
+                  </button>
+                  <button onClick={confirmAndSendVideo} style={styles.sendButton}>
+                    <FontAwesomeIcon icon={faPaperPlane} /> Send
+                  </button>
+                </div>
               </div>
             )}
             
@@ -306,12 +391,28 @@ export default function AdminChat() {
               </div>
             )}
             
+            {/* Audio Confirmation UI */}
+            {showAudioConfirmation && (
+              <div style={styles.confirmationContainer}>
+                <div style={styles.confirmationHeader}>Confirm Audio Recording</div>
+                <audio src={audioURL} style={styles.confirmationAudio} controls />
+                <div style={styles.confirmationButtons}>
+                  <button onClick={cancelAudioRecording} style={styles.cancelButton}>
+                    <FontAwesomeIcon icon={faTimes} /> Cancel
+                  </button>
+                  <button onClick={confirmAndSendAudio} style={styles.sendButton}>
+                    <FontAwesomeIcon icon={faPaperPlane} /> Send
+                  </button>
+                </div>
+              </div>
+            )}
+            
             <div style={styles.inputContainer}>
               <div style={styles.mediaIcons}>
                 {/* Upload Image */}
                 <label>
                   <FontAwesomeIcon icon={faImage} style={styles.icon} title="Upload Image" />
-                  <input type="file" hidden onChange={handleFileUpload} />
+                  <input type="file" accept="image/*" hidden onChange={handleFileUpload} />
                 </label>
 
                 {/* Video Recording */}
@@ -417,5 +518,44 @@ const styles = {
     marginRight: '10px',
     animation: 'pulse 1.5s infinite',
     boxShadow: '0 0 0 rgba(255, 0, 0, 0.4)',
+  },
+  // New styles for confirmation UI
+  confirmationContainer: {
+    margin: '10px 0',
+    padding: '15px',
+    backgroundColor: '#f8f8f8',
+    borderRadius: '10px',
+    border: '1px solid #ddd',
+  },
+  confirmationHeader: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+    color: '#6C478F',
+  },
+  confirmationMedia: {
+    width: '100%',
+    maxHeight: '200px',
+    borderRadius: '10px',
+    backgroundColor: '#000',
+  },
+  confirmationAudio: {
+    width: '100%',
+    height: '40px',
+    marginBottom: '10px',
+  },
+  confirmationButtons: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    marginTop: '10px',
+  },
+  cancelButton: {
+    padding: '8px 15px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    borderRadius: '20px',
+    cursor: 'pointer',
   },
 };
