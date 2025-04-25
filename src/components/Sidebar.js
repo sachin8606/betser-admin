@@ -118,6 +118,7 @@ export default (props = {}) => {
                 <NavItem title="Pending" link={Routes.PendingRequests.path} />
                 <NavItem title="In Progress" link={Routes.ProgressRequests.path} />
                 <NavItem title="Resolved" link={Routes.ResolvedRequests.path} />
+                <NavItem title="Cancelled" link={Routes.CancelledRequests.path} />
               </CollapsableNavItem>
 
               {/* <CollapsableNavItem eventKey="tables/" title="Tables" icon={faTable}>

@@ -16,6 +16,7 @@ import { getRequests } from "../features/requestSlice";
 import "../assets/css/pagination.css";
 import Loader from "./Loader";
 import "../assets/css/common.css";
+import { formatMessageLocationLink } from "../utils/formatMessage";
 const ValueChange = ({ value, suffix }) => {
   const valueIcon = value < 0 ? faAngleDown : faAngleUp;
   const valueTxtColor = value < 0 ? "text-danger" : "text-success";
@@ -202,7 +203,7 @@ export const UsersTable = ({ users }) => {
   const dispatch = useDispatch()
 
   const TableRow = (props) => {
-    const { id, createdAt, phone, email, firstName, lastName, nickName,device,index } = props
+    const { id, createdAt, phone, email, firstName, lastName, nickName, device, index } = props
     return (
       <tr>
         <td>
@@ -369,7 +370,7 @@ export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
         </td>
         <td>
           <span className="fw-normal">
-            {description}
+            {formatMessageLocationLink(description)}
           </span>
         </td>
         <td>
@@ -400,15 +401,26 @@ export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
         <td>
           <textarea placeholder="Enter comment here" className="request_sts_comment" onChange={(e) => setNote(e.target.value)} value={note} disabled={status === "" ? true : false}></textarea>
           {status === "" ? <></> :
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleUpdate(id, status, note)}
+                block
+              >
 
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleUpdate(id, status, note)}
-              block
-            >
-              {status === "progress" ? "Mark as In Progress" : status === "resolved" ? "Mark as Resolved" : <></>}
-            </Button>
+                {status === "progress" ? "Mark as In Progress" : status === "resolved" ? "Mark as Resolved" : <></>}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                className="mt-2"
+                onClick={() => handleUpdate(id, "cancelled", note)}
+                block
+              >
+                Cancel Request
+              </Button>
+            </>
           }
         </td>
       </tr>

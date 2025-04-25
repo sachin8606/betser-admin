@@ -55,6 +55,7 @@ import Chat from './Chat';
 import Pending from './requests/Pending'
 import InProgress from './requests/InProgress'
 import ResolvedRequests from './requests/Resolved'
+import CancelledRequests from './requests/Cancelled'  
 import Config from './Config';
 import { messaging, onMessage, requestPermission } from '../config/firebase';
 import { validateToken } from '../features/adminSlice';
@@ -168,6 +169,7 @@ export default () => {
       <RouteWithSidebar exact path={Routes.PendingRequests.path} component={Pending} />
       <RouteWithSidebar exact path={Routes.ProgressRequests.path} component={InProgress} />
       <RouteWithSidebar exact path={Routes.ResolvedRequests.path} component={ResolvedRequests} />
+      <RouteWithSidebar exact path={Routes.CancelledRequests.path} component={CancelledRequests} />
 
       {/* components */}
       <RouteWithSidebar exact path={Routes.Accordions.path} component={Accordion} />

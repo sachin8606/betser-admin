@@ -9,6 +9,7 @@ import format from "date-fns/format"
 import Loader from "../components/Loader";
 import { useAlert } from "react-alert";
 import useSocket from "../services/socket.service";
+import { formatMessageLocationLink } from "../utils/formatMessage";
 
 export default function AdminChat() {
   const alert = useAlert()
@@ -23,7 +24,7 @@ export default function AdminChat() {
   const [curUserName, setCurUserName] = useState("")
   const [adminId, setAdminId] = useState(localStorage.getItem("betser-admin"))
   const { socket } = useSocket()
-  
+
   // Media recording states
   const [isRecordingVideo, setIsRecordingVideo] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
@@ -33,6 +34,8 @@ export default function AdminChat() {
   const [showAudioConfirmation, setShowAudioConfirmation] = useState(false);
   const [videoURL, setVideoURL] = useState("");
   const [audioURL, setAudioURL] = useState("");
+  const [isSendingVideo, setIsSendingVideo] = useState(false);
+  const [isSendingAudio, setIsSendingAudio] = useState(false);
   const mediaRecorderRef = useRef(null);
   const videoPreviewRef = useRef(null);
   const videoConfirmRef = useRef(null);
@@ -91,7 +94,7 @@ export default function AdminChat() {
         return
       }
     }
-    
+
     const messageData = {
       senderId: adminId,
       senderRole: "admin",
@@ -127,48 +130,64 @@ export default function AdminChat() {
   // Start video recording
   const startVideoRecording = async () => {
     try {
+      // Get media stream first
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       streamRef.current = stream;
-      
-      if (videoPreviewRef.current) {
-        videoPreviewRef.current.srcObject = stream;
-        videoPreviewRef.current.play();
-      }
-      
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      chunksRef.current = [];
-      
-      mediaRecorderRef.current.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
-      
-      mediaRecorderRef.current.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
-        setRecordedVideo(blob);
-        
-        // Create URL for preview
-        const url = URL.createObjectURL(blob);
-        setVideoURL(url);
-        
-        // Show confirmation UI
-        setShowVideoConfirmation(true);
-        
-        // Clean up recording stream
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-        }
-        if (videoPreviewRef.current) {
-          videoPreviewRef.current.srcObject = null;
-        }
-      };
-      
-      mediaRecorderRef.current.start();
+
+      // Set state to show video element
       setIsRecordingVideo(true);
+
+      // Wait for the state update to complete and video element to be available
+      setTimeout(async () => {
+        if (videoPreviewRef.current) {
+          const video = videoPreviewRef.current;
+          video.srcObject = stream;
+
+          try {
+            await video.play();
+            console.log("Video preview playing");
+          } catch (playError) {
+            console.error("Error playing video:", playError);
+          }
+
+          // Now set up the recorder
+          mediaRecorderRef.current = new MediaRecorder(stream);
+          chunksRef.current = [];
+
+          mediaRecorderRef.current.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+              chunksRef.current.push(e.data);
+            }
+          };
+
+          mediaRecorderRef.current.onstop = async () => {
+            const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+            setRecordedVideo(blob);
+            setVideoURL(URL.createObjectURL(blob));
+            setShowVideoConfirmation(true);
+
+            if (streamRef.current) {
+              streamRef.current.getTracks().forEach(track => track.stop());
+            }
+            if (videoPreviewRef.current) {
+              videoPreviewRef.current.srcObject = null;
+            }
+          };
+
+          mediaRecorderRef.current.start();
+        } else {
+          console.error("Video element still not available after state update");
+          alert.error("Could not initialize video preview");
+          // Clean up stream
+          stream.getTracks().forEach(track => track.stop());
+          setIsRecordingVideo(false);
+        }
+      }, 100); // Short delay to ensure React has updated the DOM
+
     } catch (error) {
       alert.error("Cannot access camera and microphone");
       console.error("Error accessing media devices:", error);
+      setIsRecordingVideo(false);
     }
   };
 
@@ -183,14 +202,17 @@ export default function AdminChat() {
   // Confirm and send video
   const confirmAndSendVideo = async () => {
     if (!recordedVideo) return;
-    
+
+    // Set loading state
+    setIsSendingVideo(true);
+
     // Upload and send the recorded video
     const formData = new FormData();
     formData.append("file", recordedVideo, "recorded-video.webm");
     try {
       const res = await dispatch(uploadMedia(formData)).unwrap();
       sendMessage({ type: "video", mediaUrl: res.mediaUrl });
-      
+
       // Clean up
       URL.revokeObjectURL(videoURL);
       setVideoURL("");
@@ -198,6 +220,9 @@ export default function AdminChat() {
       setShowVideoConfirmation(false);
     } catch (error) {
       alert.error("Failed to upload video");
+    } finally {
+      // Reset loading state
+      setIsSendingVideo(false);
     }
   };
 
@@ -216,33 +241,33 @@ export default function AdminChat() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      
+
       mediaRecorderRef.current = new MediaRecorder(stream);
       chunksRef.current = [];
-      
+
       mediaRecorderRef.current.ondataavailable = (e) => {
         if (e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
-      
+
       mediaRecorderRef.current.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setRecordedAudio(blob);
-        
+
         // Create URL for preview
         const url = URL.createObjectURL(blob);
         setAudioURL(url);
-        
+
         // Show confirmation UI
         setShowAudioConfirmation(true);
-        
+
         // Clean up recording stream
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
       };
-      
+
       mediaRecorderRef.current.start();
       setIsRecordingAudio(true);
     } catch (error) {
@@ -262,14 +287,17 @@ export default function AdminChat() {
   // Confirm and send audio
   const confirmAndSendAudio = async () => {
     if (!recordedAudio) return;
-    
+
+    // Set loading state
+    setIsSendingAudio(true);
+
     // Upload and send the recorded audio
     const formData = new FormData();
     formData.append("file", recordedAudio, "recorded-audio.webm");
     try {
       const res = await dispatch(uploadMedia(formData)).unwrap();
       sendMessage({ type: "audio", mediaUrl: res.mediaUrl });
-      
+
       // Clean up
       URL.revokeObjectURL(audioURL);
       setAudioURL("");
@@ -277,6 +305,9 @@ export default function AdminChat() {
       setShowAudioConfirmation(false);
     } catch (error) {
       alert.error("Failed to upload audio");
+    } finally {
+      // Reset loading state
+      setIsSendingAudio(false);
     }
   };
 
@@ -289,6 +320,8 @@ export default function AdminChat() {
     setRecordedAudio(null);
     setShowAudioConfirmation(false);
   };
+
+
 
   return (
     <div style={styles.container}>
@@ -329,7 +362,7 @@ export default function AdminChat() {
                   key={message.id}
                   style={message.senderRole === "admin" ? styles.adminMessage : styles.userMessage}
                 >
-                  <div className="chat-messages-cntn">{message.message}</div>
+                  <div className="chat-messages-cntn">{formatMessageLocationLink(message?.message)}</div>
                   {message.type !== "text" && (
                     <div>
                       {message.type === "image" && (
@@ -357,29 +390,57 @@ export default function AdminChat() {
             {/* Video Recording Live Preview */}
             {isRecordingVideo && (
               <div style={styles.previewContainer}>
-                <video ref={videoPreviewRef} style={styles.videoPreview} muted />
+                <video
+                  ref={videoPreviewRef}
+                  style={styles.videoPreview}
+                  muted
+                  autoPlay
+                  playsInline
+                />
+
                 <button onClick={stopVideoRecording} style={styles.stopButton}>
                   <FontAwesomeIcon icon={faStop} /> Stop Recording
                 </button>
               </div>
             )}
-            
+
             {/* Video Confirmation UI */}
             {showVideoConfirmation && (
               <div style={styles.confirmationContainer}>
                 <div style={styles.confirmationHeader}>Confirm Video Recording</div>
                 <video ref={videoConfirmRef} src={videoURL} style={styles.confirmationMedia} controls />
                 <div style={styles.confirmationButtons}>
-                  <button onClick={cancelVideoRecording} style={styles.cancelButton}>
+                  <button
+                    onClick={cancelVideoRecording}
+                    style={styles.cancelButton}
+                    disabled={isSendingVideo}
+                  >
                     <FontAwesomeIcon icon={faTimes} /> Cancel
                   </button>
-                  <button onClick={confirmAndSendVideo} style={styles.sendButton}>
-                    <FontAwesomeIcon icon={faPaperPlane} /> Send
+                  <button
+                    onClick={confirmAndSendVideo}
+                    style={{
+                      ...styles.sendButton,
+                      opacity: isSendingVideo ? 0.7 : 1,
+                      cursor: isSendingVideo ? 'not-allowed' : 'pointer'
+                    }}
+                    disabled={isSendingVideo}
+                  >
+                    {isSendingVideo ? (
+                      <span>
+                        <FontAwesomeIcon icon={faClock} spin /> Sending...
+                      </span>
+                    ) : (
+                      <span>
+                        <FontAwesomeIcon icon={faPaperPlane} /> Send
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
             )}
-            
+
+
             {/* Audio Recording Indicator */}
             {isRecordingAudio && (
               <div style={styles.recordingIndicator}>
@@ -390,23 +451,43 @@ export default function AdminChat() {
                 </button>
               </div>
             )}
-            
+
             {/* Audio Confirmation UI */}
             {showAudioConfirmation && (
               <div style={styles.confirmationContainer}>
                 <div style={styles.confirmationHeader}>Confirm Audio Recording</div>
                 <audio src={audioURL} style={styles.confirmationAudio} controls />
                 <div style={styles.confirmationButtons}>
-                  <button onClick={cancelAudioRecording} style={styles.cancelButton}>
+                  <button
+                    onClick={cancelAudioRecording}
+                    style={styles.cancelButton}
+                    disabled={isSendingAudio}
+                  >
                     <FontAwesomeIcon icon={faTimes} /> Cancel
                   </button>
-                  <button onClick={confirmAndSendAudio} style={styles.sendButton}>
-                    <FontAwesomeIcon icon={faPaperPlane} /> Send
+                  <button
+                    onClick={confirmAndSendAudio}
+                    style={{
+                      ...styles.sendButton,
+                      opacity: isSendingAudio ? 0.7 : 1,
+                      cursor: isSendingAudio ? 'not-allowed' : 'pointer'
+                    }}
+                    disabled={isSendingAudio}
+                  >
+                    {isSendingAudio ? (
+                      <span>
+                        <FontAwesomeIcon icon={faClock} spin /> Sending...
+                      </span>
+                    ) : (
+                      <span>
+                        <FontAwesomeIcon icon={faPaperPlane} /> Send
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
             )}
-            
+
             <div style={styles.inputContainer}>
               <div style={styles.mediaIcons}>
                 {/* Upload Image */}
@@ -416,17 +497,17 @@ export default function AdminChat() {
                 </label>
 
                 {/* Video Recording */}
-                <FontAwesomeIcon 
-                  icon={faVideo} 
-                  style={isRecordingVideo ? {...styles.icon, color: 'red'} : styles.icon} 
+                <FontAwesomeIcon
+                  icon={faVideo}
+                  style={isRecordingVideo ? { ...styles.icon, color: 'red' } : styles.icon}
                   title={isRecordingVideo ? "Stop Recording Video" : "Record Video"}
                   onClick={isRecordingVideo ? stopVideoRecording : startVideoRecording}
                 />
 
                 {/* Audio Recording */}
-                <FontAwesomeIcon 
-                  icon={faMicrophone} 
-                  style={isRecordingAudio ? {...styles.icon, color: 'red'} : styles.icon} 
+                <FontAwesomeIcon
+                  icon={faMicrophone}
+                  style={isRecordingAudio ? { ...styles.icon, color: 'red' } : styles.icon}
                   title={isRecordingAudio ? "Stop Recording Audio" : "Record Audio"}
                   onClick={isRecordingAudio ? stopAudioRecording : startAudioRecording}
                 />
@@ -462,8 +543,11 @@ const styles = {
   chatContainer: { flexGrow: 1, display: "flex", flexDirection: "column", backgroundColor: "white", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)", padding: "15px", width: "75%" },
   header: { backgroundColor: "rgba(108,71,143,255)", color: "white", padding: "6px", borderRadius: "10px 10px 0 0", textAlign: "center", fontSize: "18px", fontWeight: "bold" },
   messageList: { flexGrow: 1, display: "flex", flexDirection: "column", padding: "15px", overflowY: "auto" },
-  adminMessage: { padding: "12px", borderRadius: "15px", maxWidth: "60%", fontSize: "14px", alignSelf: "flex-end", backgroundColor: "rgba(108,71,143,255)", color: "white", margin: "10px 0px" },
-  userMessage: { padding: "12px", borderRadius: "15px", maxWidth: "60%", fontSize: "14px", alignSelf: "flex-start", backgroundColor: "#F6F3F9", color: "#7D5C9C", margin: "10px 0px" },
+  adminMessage: {
+    padding: "12px", borderRadius: "15px", maxWidth: "60%",
+    minWidth: "26%", fontSize: "14px", alignSelf: "flex-end", backgroundColor: "rgba(108,71,143,255)", color: "white", margin: "10px 0px"
+  },
+  userMessage: { padding: "12px", borderRadius: "15px", maxWidth: "60%", minWidth: "26%", fontSize: "14px", alignSelf: "flex-start", backgroundColor: "#F6F3F9", color: "#7D5C9C", margin: "10px 0px" },
   inputContainer: { display: "flex", alignItems: "center", padding: "10px", borderTop: "1px solid #ddd" },
   messageInput: { flexGrow: 1, padding: "12px", borderRadius: "10px", border: "1px solid #7D5C9C", backgroundColor: "#F6F3F9", marginRight: "8px", fontSize: "14px" },
   sendButton: { padding: "10px 18px", backgroundColor: "#6C478F", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontSize: "14px" },
@@ -490,6 +574,7 @@ const styles = {
     objectFit: 'cover',
     borderRadius: '10px',
     backgroundColor: '#000',
+    border: '1px solid red'
   },
   stopButton: {
     position: 'absolute',
