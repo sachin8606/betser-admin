@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "efd2b79ea63e2a1c707ad22040809d26",
+    "revision": "660855bc27611efeb868a07b2fa12a4e",
     "url": "/betser-admin/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/betser-admin/static/css/2.e94d5e4c.chunk.css"
   },
   {
-    "revision": "af65d8635b77c330e6d3",
+    "revision": "ef920ac4c9e10b294c2d",
     "url": "/betser-admin/static/css/main.d5af2510.chunk.css"
   },
   {
@@ -20,8 +20,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/betser-admin/static/js/2.1aad7e20.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "af65d8635b77c330e6d3",
-    "url": "/betser-admin/static/js/main.4f4c80d3.chunk.js"
+    "revision": "ef920ac4c9e10b294c2d",
+    "url": "/betser-admin/static/js/main.4e35f79e.chunk.js"
   },
   {
     "revision": "8ed22a5a7bbe1cf0aece",
