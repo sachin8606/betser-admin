@@ -48,7 +48,7 @@ const communicationSlice = createSlice({
     // ✅ Add New Message to Current Chat
     addNewMessage: (state, action) => {
       const newMessage = action.payload;
-      if (newMessage.senderId === state.userId|| newMessage.receiverId === state.userId) {
+      if (Number(newMessage.senderId) === Number(state.userId)|| Number(newMessage.receiverId) === Number(state.userId)) {
         state.currentChat.push(newMessage);
       }
     },

@@ -12,6 +12,7 @@ export default () => {
     const [inputDisabled2, setInputDisabled2] = useState(true)
     const [inputDisabled3, setInputDisabled3] = useState(true)
     const [inputDisabled4, setInputDisabled4] = useState(true)
+    const [inputDisabled5, setInputDisabled5] = useState(true)
     const dispatch = useDispatch();
     const alert = useAlert();
     const { setting, loading, error } = useSelector(state => state.setting)
@@ -19,7 +20,8 @@ export default () => {
         help_care_number: "",
         learnUrl: "",
         email:"",
-        address:""
+        address:"",
+        betserBlogLink:""
     });
 
 
@@ -28,7 +30,7 @@ export default () => {
     }, [])
 
     useEffect(() => {
-        setSettings({ help_care_number: setting?.help_care_number, learnUrl: setting?.learnUrl,email:setting?.email,address:setting?.email })
+        setSettings({ help_care_number: setting?.help_care_number, learnUrl: setting?.learnUrl,email:setting?.email,address:setting?.address,betserBlogLink:setting?.betserBlogLink })
     }, [setting])
 
     const handleChange = (e) => {
@@ -50,6 +52,9 @@ export default () => {
             dispatch(getSettings())
             setInputDisabled(true)
             setInputDisabled2(true)
+            setInputDisabled3(true)
+            setInputDisabled4(true)
+            setInputDisabled5(true)
         }
         catch (err) {
             alert.error("Error")
@@ -94,6 +99,22 @@ export default () => {
                     </InputGroup>
                 </Form.Group>
                 <Form.Group className="mt-2">
+                    <Form.Label>Betser Blog Url</Form.Label>
+                    <InputGroup>
+                        <Form.Control
+                            type="text"
+                            name="betserBlogLink"
+                            value={settings.betserBlogLink}
+                            onChange={handleChange}
+                            disabled={inputDisabled3}
+                            placeholder="Enter Learn Url"
+                        />
+                        <InputGroup.Text onClick={() => setInputDisabled3(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled3 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
+                        </InputGroup.Text>
+                    </InputGroup>
+                </Form.Group>
+                <Form.Group className="mt-2">
                     <Form.Label>Email</Form.Label>
                     <InputGroup>
                         <Form.Control
@@ -101,11 +122,11 @@ export default () => {
                             name="email"
                             value={settings.email}
                             onChange={handleChange}
-                            disabled={inputDisabled3}
+                            disabled={inputDisabled4}
                             placeholder="Enter Email"
                         />
-                        <InputGroup.Text onClick={() => setInputDisabled3(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
-                            {inputDisabled3 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
+                        <InputGroup.Text onClick={() => setInputDisabled4(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled4 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
                         </InputGroup.Text>
                     </InputGroup>
                 </Form.Group>
@@ -117,11 +138,11 @@ export default () => {
                             name="address"
                             value={settings.address}
                             onChange={handleChange}
-                            disabled={inputDisabled4}
+                            disabled={inputDisabled5}
                             placeholder="Enter Address"
                         />
-                        <InputGroup.Text onClick={() => setInputDisabled4(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
-                            {inputDisabled4 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
+                        <InputGroup.Text onClick={() => setInputDisabled5(false)} style={{ marginRight: "1px", borderRight: "0.0625rem solid #d1d7e0", cursor: 'pointer' }}>
+                            {inputDisabled5 ? <FontAwesomeIcon icon={faPencilAlt} /> : <></>}
                         </InputGroup.Text>
                     </InputGroup>
                 </Form.Group>

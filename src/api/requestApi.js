@@ -11,7 +11,7 @@ export const fetchRequests = async (data = {}) => {
 
 export const updateRequest = async (data = {}) => {
     const token = localStorage.getItem("token");
-    return axios.post(`${API_BASE_URL}/request/update`,data, {
+    return axios.put(`${API_BASE_URL}/request/update/${data.id}`,data.data, {
         headers: { Authorization: `Bearer ${token}` },
     });
 }

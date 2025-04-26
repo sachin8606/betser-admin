@@ -17,6 +17,7 @@ import "../assets/css/pagination.css";
 import Loader from "./Loader";
 import "../assets/css/common.css";
 import { formatMessageLocationLink } from "../utils/formatMessage";
+import CommentModal from "./CommentModal";
 const ValueChange = ({ value, suffix }) => {
   const valueIcon = value < 0 ? faAngleDown : faAngleUp;
   const valueTxtColor = value < 0 ? "text-danger" : "text-success";
@@ -336,15 +337,20 @@ export const UsersTable = ({ users }) => {
 export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
 
   const dispatch = useDispatch();
+  const [commentShow, setCommentShow] = useState(false)
+  const [comments, setComments] = useState([])
   const { filter, currentPage, totalPages, loading, error, requests } = useSelector((state) => state.request);
+
+  const handleViewComment = (comments) => {
+    setComments(comments)
+    setCommentShow(true)
+  }
 
   const RequestsRow = (props) => {
     const [note, setNote] = useState("")
-    const { id, updatedAt, type, description, User, mediaUrl, mediaType, comment, index } = props
+    const { id, updatedAt, type, description, User, mediaUrl, mediaType, comments, index } = props
 
-    useEffect(() => {
-      setNote(comment)
-    }, [])
+
     return (
       <tr>
         <td>
@@ -399,7 +405,10 @@ export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
           </span>
         </td>
         <td>
-          <textarea placeholder="Enter comment here" className="request_sts_comment" onChange={(e) => setNote(e.target.value)} value={note} disabled={status === "" ? true : false}></textarea>
+          <p className="text-decoration-underline" style={{cursor:'pointer'}} onClick={()=>handleViewComment(comments)}>View Comments</p>
+          {
+            status === "progress" || status === "pending" ? <textarea placeholder="Enter comment here" className="request_sts_comment" onChange={(e) => setNote(e.target.value)} value={note} disabled={status === "" ? true : false}></textarea>:<></>
+          }
           {status === "" ? <></> :
             <>
               <Button
@@ -427,8 +436,8 @@ export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
     );
   }
 
-
   return (
+    <>
     <Card border="light" className="table-wrapper table-responsive shadow-sm">
       <Card.Body className="pt-0">
         <Table hover className="table align-items-center">
@@ -485,6 +494,12 @@ export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
         }
       </Card.Body>
     </Card>
+    <CommentModal
+      show={commentShow}
+      handleClose={() => setCommentShow(false)}
+      comments={comments}
+    />
+    </>
   )
 }
 

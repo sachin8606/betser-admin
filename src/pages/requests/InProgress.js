@@ -31,13 +31,15 @@ export default () => {
 
 
     const handleConfirm = async () => {
-        setShow(false)
-        setSelectedId(null)
-        setCurrStatus(null)
-        setCommentRec("")
         try {
-            await dispatch(updateRequestStatus({ id: selectedId, data: { status: currStatus,comment:commentRec  } })).unwrap()
+            let commentBody = {
+                "comment":commentRec,
+                "admin":localStorage.getItem("betser-admin"),
+                "createdAt":new Date().toISOString(1)
+              } 
+            await dispatch(updateRequestStatus({ id: selectedId, data: { status: currStatus,comments:[commentBody]  } })).unwrap()
             alert.success("Status updated.")
+            resetFields();
             dispatch(getRequests({ filters: { "status": "progress" } }))
         } catch (err) {
             alert.error("error")
@@ -66,6 +68,13 @@ export default () => {
         } catch (err) {
             console.log(err)
         }
+    }
+
+    const resetFields = () =>{
+        setShow(false)
+        setSelectedId(null)
+        setCurrStatus(null)
+        setCommentRec("")
     }
     
     // Preview image

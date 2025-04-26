@@ -20,6 +20,7 @@
 .table-media-container{
     width: 100px;
     height: 100px;
+    margin:auto;
 }
 .table-media-container img,video,audio{
     width: 100%;

@@ -25,7 +25,8 @@ const useSocket = (adminId) => {
         const handleReceiveMessage = (message) => {
             playMessageIncomingSound()
             alert.info("You have a new message.")
-            if (message.senderId === userId) {
+            console.log("senderId", message.senderId, "userId", userId);
+            if (Number(message.senderId) === Number(userId)) {
                 dispatch(addNewMessage(message));
             } else {
                 const updatedUnread = { 

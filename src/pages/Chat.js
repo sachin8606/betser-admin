@@ -208,7 +208,8 @@ export default function AdminChat() {
 
     // Upload and send the recorded video
     const formData = new FormData();
-    formData.append("file", recordedVideo, "recorded-video.webm");
+    const timestamp = new Date().toISOString().replace(/:/g, "-").replace(/\..+/, "");
+    formData.append("file", recordedVideo, `recorded-video-${timestamp}.mp4`);
     try {
       const res = await dispatch(uploadMedia(formData)).unwrap();
       sendMessage({ type: "video", mediaUrl: res.mediaUrl });
