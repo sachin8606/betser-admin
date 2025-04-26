@@ -405,9 +405,9 @@ export const RequestsTable = ({ handleUpdate, status, previewImage }) => {
           </span>
         </td>
         <td>
-          <p className="text-decoration-underline" style={{cursor:'pointer'}} onClick={()=>handleViewComment(comments)}>View Comments</p>
+          {status === "progress" ?<></>:<p className="text-decoration-underline" style={{cursor:'pointer'}} onClick={()=>handleViewComment(comments)}>View Comments</p>}
           {
-            status === "progress" || status === "pending" ? <textarea placeholder="Enter comment here" className="request_sts_comment" onChange={(e) => setNote(e.target.value)} value={note} disabled={status === "" ? true : false}></textarea>:<></>
+            (status === "progress" || status === "resolved") ? <textarea placeholder="Enter comment here" className="request_sts_comment" onChange={(e) => setNote(e.target.value)} value={note} disabled={status === "" ? true : false}></textarea>:<></>
           }
           {status === "" ? <></> :
             <>

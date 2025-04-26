@@ -39,8 +39,8 @@ export default () => {
               } 
             await dispatch(updateRequestStatus({ id: selectedId, data: { status: currStatus,comments:[commentBody]  } })).unwrap()
             alert.success("Status updated.")
-            resetFields();
             dispatch(getRequests({ filters: { "status": "progress" } }))
+            resetFields();
         } catch (err) {
             alert.error("error")
         }
