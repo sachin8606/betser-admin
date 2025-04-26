@@ -141,7 +141,8 @@ const CommentModal = ({ comments, show, handleClose }) => {
               ></button>
             </div>
             <div className="modal-body" style={customStyles.modalBody}>
-              <ul className="list-group list-group-flush">
+              {
+                comments.length === 0 ? <h4 style={{textAlign:"center",margin:"10px 0px"}}>No comments found.</h4>:  <ul className="list-group list-group-flush">
                 {comments.map((comment) => (
                   <li 
                     key={comment.id} 
@@ -172,6 +173,7 @@ const CommentModal = ({ comments, show, handleClose }) => {
                   </li>
                 ))}
               </ul>
+              }
             </div>
             {/* Footer is completely removed by setting display: none in the styles */}
           </div>
